@@ -26,11 +26,7 @@ $route = $route ? $route : 'swim_management/login';
 
 switch ($route) {
     case 'swim_management/login':
-        $userController->login();
-        break;
     case 'swim_management':
-        $userController->login();
-        break;
     case 'swim_management/index.php':
         $userController->login();
         break;
@@ -49,9 +45,33 @@ switch ($route) {
     case 'swim_management/view-swim-performances':
         $userController->viewSwimmerPerformance();
         break;
-    case 'swim_management/test':
-        $userController->validateRaceData();
+    case 'swim_management/addCoach':
+        $userController->addCoach();
         break;
+    case 'swim_management/admindashboard':
+        $userController->adminDashboard();
+        break;
+    case 'swim_management/viewallcoach':
+        $userController->viewAllCoach();
+        break;   
+    case strpos($route, 'swim_management/updatecoach') === 0:
+        // Extract the coach ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $coachId = isset($query['coachId']) ? $query['coachId'] : null;
+        echo "Debug: Entering updatecoach route with ID: $coachId"; 
+        $userController->showUpdateCoachForm($coachId);
+        break;    
+    case 'swim_management/coachformupdate':
+        $userController->updateCoachAction();
+        break;
+    case strpos($route, 'swim_management/deletecoach') === 0:
+        // Extract the coach ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $coachId = isset($query['coachId']) ? $query['coachId'] : null;
+        $userController->deleteCoach($coachId);
+        break;      
     default:
         echo "404 Not Found";
         break;

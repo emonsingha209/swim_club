@@ -16,7 +16,19 @@ class UserController
             $password = $_POST['password'];            
 
             if ($this->model->login($username, $password)) {
-                header("Location: view-swim-performances");
+                $userRole = $this->model->getRole();
+                if($userRole === "admin")
+                {
+                    header("Location: admindashboard");
+                }
+                else if($userRole === "coach")
+                {
+                    header("Location: coachDashboard");
+                }
+                else if($userRole === "parent" || $userRole === "swimmer")
+                {
+                    header("Location: swimmerDashboard");
+                }
                 exit;            
             } else {
                 $error = "Invalid username or password";
@@ -49,7 +61,7 @@ class UserController
 
             $swimmer_id = $this->model->register($data);
    
-            if ($_POST['parent_username'] != "") {
+            if (isset($_POST['parent_username'])) {
                 $parentdata = [
                     'username' => $_POST['parent_username'],
                     'password' => $_POST['parent_password'],
@@ -81,7 +93,14 @@ class UserController
             }
         }
 
-        require_once 'views/register.php';
+        if($_POST['role'] === "coach" || $_POST['role'] === "swimmer") {
+            require_once 'views/addCoach.php';
+        }
+        else {
+            require_once 'views/register.php';
+        }
+
+        
     }
 
     public function updatePersonalDetails()
@@ -132,6 +151,82 @@ class UserController
         }
 
         require_once 'views/add_swim_performance.php';
+    }
+
+    public function addCoach()
+    {
+        $this->checkAuth('admin');
+        
+        require_once 'views/addCoach.php';
+    }
+
+    public function adminDashboard()
+    {
+        $this->checkAuth('admin');
+
+        $username = $_SESSION['name'];
+        
+
+        require_once 'views/adminDashboard.php';
+    }
+
+    public function viewAllCoach()
+    {
+        $this->checkAuth('admin');
+        $allcoaches = $this->model->getAllCoach();
+
+        require_once 'views/viewCoaches.php';
+    }
+
+    public function showUpdateCoachForm($coachId)
+    {
+        // Get coach details
+        $coach = $this->model->getCoachById($coachId);
+
+        // Display update form
+        require_once 'views/updateCoachForm.php';
+    }
+
+    public function updateCoachAction()
+    {
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'id' => $_POST['id'],
+                'username' => $_POST['username'],
+                'password' => $_POST['password'],
+                'first_name' => $_POST['first_name'],
+                'last_name' => $_POST['last_name'],
+                'email' => $_POST['email'],
+                'dob' => $_POST['dob'],
+                'phone' => $_POST['phone'],
+                'address' => $_POST['address'],
+                'postcode' => $_POST['postcode'],
+                'role' => $_POST['role']
+            ];
+
+            $result = $this->model->updateCoach($data);
+
+            if ($result === true) {
+                echo "Coach updated successfully";
+            } else {
+                echo "Error updating coach: " . implode(", ", $result);
+            }
+        }
+    }
+
+
+    public function deleteCoach($coachId)
+    {
+        $result = $this->model->deleteCoach($coachId);
+
+        if ($result === true) {
+            echo "Coach deleted successfully";
+        } else {
+            echo "Error deleting coach";
+        }
+
+        header("Location: viewallcoach");
+        exit;
     }
 
     public function viewSwimPerformances()
@@ -250,31 +345,6 @@ class UserController
         require_once 'views/edit_swimmer_performance.php';
     }
 
-    public function validateRaceData()
-    {
-        $this->checkAuth('admin');
-
-        $performanceData = $this->model->getAllNonValSwimmerPerformance();
-
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $performanceId = $_POST["performance_id"];
-
-            // Only administrators can validate race data
-            $result = $this->model->validateRaceData($performanceId);
-
-            if ($result === true) {
-                echo "Race data validated successfully";
-                header("Location: view_swim_performances.php");
-                exit();
-            } else {
-                foreach ($result as $error) {
-                    echo $error . "<br>";
-                }
-            }
-        }
-
-        require_once 'views/validate_race_data.php';
-    }
 
     private function checkSwimmerPermission($swimmerId)
     {

@@ -43,7 +43,19 @@ class User
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password'])) {
                 session_start();
-                $_SESSION['user_id'] = $user['id'];
+                if ($user['role'] == 'parent') {
+                    // Fetch swimmer_id from parent_swimmer table
+                    $swimmer_id = $this->getSwimmerId($user['id']);
+                    if ($swimmer_id !== false) {
+                        $_SESSION['user_id'] = $swimmer_id;
+                    } else {
+                        // Unable to fetch swimmer_id, return false
+                        return false;
+                    }
+                } else {
+                    $_SESSION['user_id'] = $user['id'];
+                }
+                $_SESSION['name'] = $user['first_name'];
                 $_SESSION['role'] = $user['role'];
                 return $user['role'];
             }
@@ -51,6 +63,23 @@ class User
 
         return false;
     }
+
+    private function getSwimmerId($parent_id)
+    {
+        $sql = "SELECT swimmer_id FROM parent_swimmer WHERE parent_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $parent_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['swimmer_id'];
+        }
+
+        return false;
+    }
+
 
     public function logout()
     {
@@ -165,6 +194,67 @@ class User
         return $errors;
     }
 
+    public function getAllCoach()
+    {
+        $query = "SELECT * FROM users WHERE role = ?";
+        $stmt = $this->conn->prepare($query);
+        $role = "coach"; // Define the role value
+        $stmt->bind_param("s", $role);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
+
+    public function getCoachById($coachId)
+    {
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $coachId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $coach = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $coach; // Return coach information
+    }
+
+    public function updateCoach($data)
+    {
+        $errors = [];
+
+        if (empty($errors)) {
+            $sql = "UPDATE users SET username=?, password=?, first_name=?, last_name=?, email=?, dob=?, phone=?, address=?, postcode=?, role=? WHERE id=?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ssssssssssi", $data['username'], $data['password'], $data['first_name'], $data['last_name'], $data['email'], $data['dob'], $data['phone'], $data['address'], $data['postcode'], $data['role'], $data['id']);
+
+            if ($stmt->execute()) {
+                return true; // Success
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+
+        return $errors;
+    }
+
+    public function deleteCoach($coachId)
+    {
+        $sql = "DELETE FROM users WHERE id=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $coachId);
+
+        if ($stmt->execute()) {
+            return true; // Success
+        } else {
+            return false; // Error
+        }
+    }
+
     public function addParentSwimmer($parent_id, $swimmer_id) {
         // Prepare the SQL statement
         $sql = "INSERT INTO parent_swimmer (parent_id, swimmer_id) VALUES (?, ?)";
@@ -173,10 +263,8 @@ class User
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ii", $parent_id, $swimmer_id);
         if ($stmt->execute()) {
-            // Insertion successful
             return true;
         } else {
-            // Insertion failed
             return false;
         }
     }
@@ -240,6 +328,20 @@ class User
         return $errors;
     }
 
+    public function getSwimmerDetails($swimmerId)
+    {
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $swimmerId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = $result->fetch_assoc();
+        $stmt->close();
+        return $details;
+    }
+
+    
+
     public function addSwimPerformance($userId, $data)
     {
         $errors = [];
@@ -291,101 +393,18 @@ class User
         return $performances;
     }
 
-    public function getAllNonValSwimmerPerformance()
-    {
-        $query = "SELECT * FROM swim_performance WHERE validated = 0";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $performances = [];
-        while ($row = $result->fetch_assoc()) {
-            $performances[] = $row;
-        }
-        $stmt->close();
-        return $performances;
-    }
-
-    public function getSwimmerDetails($swimmerId)
-    {
-        $query = "SELECT * FROM users WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $swimmerId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $details = $result->fetch_assoc();
-        $stmt->close();
-        return $details;
-    }
-
-    public function getRelevantSwimmers($dob, $userId)
-    {
-        $query = "SELECT * FROM users WHERE dob = ? AND id != ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("si", $dob, $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $swimmers = [];
-        while ($row = $result->fetch_assoc()) {
-            $swimmers[] = $row;
-        }
-        $stmt->close();
-        return $swimmers;
-    }
-
-    public function editPersonalDetails($userId, $data)
-    {
-        $query = "UPDATE users SET phone = ?, address = ?, postcode = ? WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("sssi", $data['phone'], $data['address'], $data['postcode'], $userId);
-        $result = $stmt->execute();
-        $stmt->close();
-        return $result;
-    }
-
-    public function editSwimmerPerformance($swimmerId, $performanceId, $data)
-    {
-        $query = "UPDATE swim_performance SET event_name = ?, event_date = ?, time = ? WHERE id = ? AND swimmer_id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("sssii", $data['event_name'], $data['event_date'], $data['time'], $performanceId, $swimmerId);
-        $result = $stmt->execute();
-        $stmt->close();
-        return $result;
-    }
-
-    public function validateRaceData($performanceId)
-    {
-        $query = "UPDATE swim_performance SET validated = 1 WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $performanceId);
-        $result = $stmt->execute();
-        $stmt->close();
-        return $result;
-    }
-
     public function isAdultSwimmer($userId)
     {
-        $query = "SELECT date_of_birth FROM users WHERE id = ?";
+        $query = "SELECT dob FROM users WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $userId);
         $stmt->execute();
         $result = $stmt->get_result();
-        $dob = $result->fetch_assoc()['date_of_birth'];
+        $dob = $result->fetch_assoc()['dob'];
         $stmt->close();
         
         // Assuming an adult is someone aged 18 or older
         $eighteenYearsAgo = date('Y-m-d', strtotime('-18 years'));
         return $dob <= $eighteenYearsAgo;
-    }
-
-    public function getUserRole($userId)
-    {
-        $query = "SELECT role FROM users WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $role = $result->fetch_assoc()['role'];
-        $stmt->close();
-        return $role;
     }
 }
