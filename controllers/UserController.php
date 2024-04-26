@@ -40,6 +40,16 @@ class UserController
         require_once 'views/login.php';
     }
 
+    public function adminDashboard()
+    {
+        $this->checkAuth('admin');
+
+        $username = $_SESSION['name'];
+        
+
+        require_once 'views/adminDashboard.php';
+    }
+
     public function register()
     {
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -103,56 +113,6 @@ class UserController
         
     }
 
-    public function updatePersonalDetails()
-    {
-        $this->checkAuth('parent', 'swimmer');
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $userId = $_POST["user_id"];
-            $data = [
-                'phone' => $_POST['phone'],
-                'address' => $_POST['address'],
-                'postcode' => $_POST['postcode']
-            ];
-
-            $result = $this->model->updatePersonalDetails($userId, $data);
-
-            if ($result === true) {
-                echo "Personal details updated successfully";
-            } else {
-                foreach ($result as $error) {
-                    echo $error . "<br>";
-                }
-            }
-        }
-
-        require_once 'views/update_personal_details.php';
-    }
-
-    public function addSwimPerformance()
-    {
-        $this->checkAuth('coach');
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $userId = $_POST["user_id"];
-            $data = [
-                'event_name' => $_POST['event_name'],
-                'event_date' => $_POST['event_date'],
-                'time' => $_POST['time']
-            ];
-
-            $result = $this->model->addSwimPerformance($userId, $data);
-
-            if ($result === true) {
-                echo "Swim performance data added successfully";
-            } else {
-                foreach ($result as $error) {
-                    echo $error . "<br>";
-                }
-            }
-        }
-
-        require_once 'views/add_swim_performance.php';
-    }
-
     public function addCoach()
     {
         $this->checkAuth('admin');
@@ -160,15 +120,7 @@ class UserController
         require_once 'views/addCoach.php';
     }
 
-    public function adminDashboard()
-    {
-        $this->checkAuth('admin');
-
-        $username = $_SESSION['name'];
-        
-
-        require_once 'views/adminDashboard.php';
-    }
+    
 
     public function viewAllCoach()
     {
@@ -208,12 +160,13 @@ class UserController
 
             if ($result === true) {
                 echo "Coach updated successfully";
+                header("Location: viewallcoach");
+                exit;
             } else {
                 echo "Error updating coach: " . implode(", ", $result);
             }
         }
     }
-
 
     public function deleteCoach($coachId)
     {
@@ -229,13 +182,26 @@ class UserController
         exit;
     }
 
-    public function viewSwimPerformances()
+    public function addMeet()
     {
-        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
-        $userId = $_SESSION["user_id"];
-        $performances = $this->model->getSwimPerformances($userId);
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            
+            $data = [
+                'meet_name' => $_POST['meet_name'],
+                'meet_date' => $_POST['meet_date'],
+                'meet_location' => $_POST['meet_location']
+            ];          
 
-        require_once 'views/view_swim_performances.php';
+            $result = $this->model->addMeet($data);
+            
+            if ($result) {
+                echo "Added Meet successful";
+            } else {
+                echo "Error";
+            }
+        }
+
+        require_once 'views/addMeet.php';
     }
 
     public function logout()
@@ -243,9 +209,7 @@ class UserController
         $this->model->logout();
         header("Location: index.php");
         exit;
-    }
-
-    
+    }    
 
     public function checkAuth(...$allowedRoles)
     {
@@ -260,91 +224,6 @@ class UserController
             exit;
         }
     }
-
-    public function viewSwimmerPerformance()
-    {
-        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
-
-        // Retrieve swimmer ID
-        $swimmerId = $_SESSION["user_id"];
-
-        // Check if the current user has permission to view the swimmer's data
-        if (!$this->checkSwimmerPermission($swimmerId)) {
-            echo "Access denied. You do not have permission to view this swimmer's performance.";
-            exit;
-        }
-
-        // Retrieve swimmer's performance data
-        $performanceData = $this->model->getSwimmerPerformance($swimmerId);
-
-        // Retrieve swimmer's details
-        $swimmerDetails = $this->model->getSwimmerDetails($swimmerId);
-
-        // Retrieve relevant swimmers in the club for comparison
-        $relevantSwimmers = $this->model->getRelevantSwimmers($swimmerDetails['dob'], $swimmerDetails['id']);
-
-        require_once 'views/view_swimmer_performance.php';
-    }
-
-    public function editPersonalDetails()
-    {
-        $this->checkAuth('parent', 'swimmer');
-
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $userId = $_POST["user_id"];
-            $data = [
-                'phone' => $_POST['phone'],
-                'address' => $_POST['address'],
-                'postcode' => $_POST['postcode']
-            ];
-
-            // Non-adult swimmers cannot edit personal details
-            if ($this->model->isAdultSwimmer($userId)) {
-                $result = $this->model->updatePersonalDetails($userId, $data);
-
-                if ($result === true) {
-                    echo "Personal details updated successfully";
-                } else {
-                    foreach ($result as $error) {
-                        echo $error . "<br>";
-                    }
-                }
-            } else {
-                echo "You do not have permission to edit personal details.";
-            }
-        }
-
-        require_once 'views/edit_personal_details.php';
-    }
-
-    public function editSwimmerPerformance()
-    {
-        $this->checkAuth('coach');
-
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $swimmerId = $_POST["swimmer_id"];
-            $performanceId = $_POST["performance_id"];
-            $data = [
-                'event_name' => $_POST['event_name'],
-                'event_date' => $_POST['event_date'],
-                'time' => $_POST['time']
-            ];
-
-            // Only coaches can edit swimmer performance data
-            $result = $this->model->editSwimmerPerformance($swimmerId, $performanceId, $data);
-
-            if ($result === true) {
-                echo "Swimmer performance data updated successfully";
-            } else {
-                foreach ($result as $error) {
-                    echo $error . "<br>";
-                }
-            }
-        }
-
-        require_once 'views/edit_swimmer_performance.php';
-    }
-
 
     private function checkSwimmerPermission($swimmerId)
     {

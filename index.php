@@ -59,7 +59,6 @@ switch ($route) {
         $parts = parse_url($route);
         parse_str($parts['query'], $query);
         $coachId = isset($query['coachId']) ? $query['coachId'] : null;
-        echo "Debug: Entering updatecoach route with ID: $coachId"; 
         $userController->showUpdateCoachForm($coachId);
         break;    
     case 'swim_management/coachformupdate':

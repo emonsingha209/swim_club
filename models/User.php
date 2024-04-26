@@ -194,6 +194,20 @@ class User
         return $errors;
     }
 
+    public function addParentSwimmer($parent_id, $swimmer_id) {
+        // Prepare the SQL statement
+        $sql = "INSERT INTO parent_swimmer (parent_id, swimmer_id) VALUES (?, ?)";
+        
+        // Prepare and execute the statement
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $parent_id, $swimmer_id);
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function getAllCoach()
     {
         $query = "SELECT * FROM users WHERE role = ?";
@@ -255,19 +269,28 @@ class User
         }
     }
 
-    public function addParentSwimmer($parent_id, $swimmer_id) {
-        // Prepare the SQL statement
-        $sql = "INSERT INTO parent_swimmer (parent_id, swimmer_id) VALUES (?, ?)";
-        
-        // Prepare and execute the statement
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ii", $parent_id, $swimmer_id);
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            return false;
+    public function addMeet($data)
+    {
+        $errors = [];
+
+        if (empty($errors)) {
+    
+            $sql = "INSERT INTO meets (MeetName, MeetDate, Location)
+                    VALUES (?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("sss", $data['meet_name'], $data['meet_date'], $data['meet_location']);
+    
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
         }
+
+        return $errors;
     }
+
+   
 
     public function updatePersonalDetails($userId, $data)
     {
