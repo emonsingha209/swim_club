@@ -51,9 +51,12 @@ switch ($route) {
     case 'swim_management/admindashboard':
         $userController->adminDashboard();
         break;
+    case 'swim_management/coachDashboard':
+        $userController->coachDashboard();
+        break;
     case 'swim_management/viewallcoach':
         $userController->viewAllCoach();
-        break;   
+        break;           
     case strpos($route, 'swim_management/updatecoach') === 0:
         // Extract the coach ID from the URL
         $parts = parse_url($route);
@@ -70,7 +73,126 @@ switch ($route) {
         parse_str($parts['query'], $query);
         $coachId = isset($query['coachId']) ? $query['coachId'] : null;
         $userController->deleteCoach($coachId);
-        break;      
+        break; 
+    case 'swim_management/addmeet':
+        $userController->addMeet();
+        break;  
+    case 'swim_management/viewmeets':
+        $userController->getAllMeets();
+        break;    
+    case 'swim_management/meetformupdate':
+        $userController->updateMeetAction();
+        break;
+    case strpos($route, 'swim_management/updatemeet') === 0:
+        // Extract the coach ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $meetId = isset($query['meetId']) ? $query['meetId'] : null;
+        $userController->showUpdateMeetForm($meetId);
+        break;  
+    case strpos($route, 'swim_management/deletemeet') === 0:
+        // Extract the coach ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $meetId = isset($query['meetId']) ? $query['meetId'] : null;
+        $userController->deleteMeet($meetId);
+        break;
+    case 'swim_management/addrace':
+        $userController->addRace();
+        break;  
+    case 'swim_management/viewraces':
+        $userController->getAllRaces();
+        break;  
+    case 'swim_management/raceformupdate':
+        $userController->updateRaceAction();
+        break;
+    case strpos($route, 'swim_management/updaterace') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceId = isset($query['raceId']) ? $query['raceId'] : null;
+        $userController->showUpdateRaceForm($raceId);
+        break; 
+    case strpos($route, 'swim_management/deleterace') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceId = isset($query['raceId']) ? $query['raceId'] : null;
+        $userController->deleteRace($raceId);
+        break;
+    case 'swim_management/addresultform':
+        $userController->addRaceResult();
+        break;
+    case strpos($route, 'swim_management/addraceresult') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceId = isset($query['raceId']) ? $query['raceId'] : null;
+        $userController->addRaceResultPage($raceId);
+        break; 
+    case strpos($route, 'swim_management/raceresults') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceId = isset($query['raceId']) ? $query['raceId'] : null;
+        $userController->RaceResultByID($raceId);
+        break; 
+    case 'swim_management/rresultformupdate':
+        $userController->updateRaceResultAction();
+        break;
+    case strpos($route, 'swim_management/updaterresult') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceresultId = isset($query['raceresultId']) ? $query['raceresultId'] : null;
+        $userController->showUpdateRaceResultForm($raceresultId);
+        break; 
+    case strpos($route, 'swim_management/deleterresult') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $raceresultId = isset($query['raceresultId']) ? $query['raceresultId'] : null;
+        $userController->deleteRaceResult($raceresultId);
+        break;
+    case 'swim_management/addsquad':
+        $userController->addSquad();
+        break;    
+    case 'swim_management/viewsquads':
+        $userController->getAllSquads();
+        break;
+    case strpos($route, 'swim_management/squad') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->getSquadById($squadId);
+        break; 
+    case 'swim_management/squadformupdate':
+        $userController->updateSquadAction();
+        break;
+    
+    case strpos($route, 'swim_management/updatesquad') === 0:
+        // Extract the squad ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->showUpdateSquadForm($squadId);
+        break;
+    
+    case strpos($route, 'swim_management/deletesquad') === 0:
+        // Extract the squad ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->deleteSquad($squadId);
+        break;
+    case strpos($route, 'swim_management/addswimmertosquad') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $swimmerId = isset($query['swimmerId']) ? $query['swimmerId'] : null;
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->addSwimmerToSquad($swimmerId, $squadId);
+        break;  
+    case strpos($route, 'swim_management/removeswimmerfromsquad') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $swimmerId = isset($query['swimmerId']) ? $query['swimmerId'] : null;
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->removeSwimmerFromSquad($swimmerId, $squadId);
+        break;    
     default:
         echo "404 Not Found";
         break;

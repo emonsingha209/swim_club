@@ -1,5 +1,5 @@
 <?php $title = 'Add Coach'; ?>
-<?php include 'views/adminMenuHeader.php'; ?>
+<?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mt-4">Add New Coach</h2>
 <form class="mt-4" method="post" action="<?php echo 'register' ?>">
@@ -55,4 +55,4 @@
     </div>
 </form>
 
-<?php include 'views/adminMenuFooter.php'; ?>
+<?php include 'views/layoutFooter.php'; ?>

@@ -1,0 +1,14 @@
+th,
+tr td:last-child {
+  white-space: nowrap;
+}
+@media (min-width: 992px) {
+  .col-lg-1_5 {
+    flex: 0 0 auto;
+    width: 20%;
+  }
+  .col-lg-4_5 {
+    flex: 0 0 auto;
+    width: 80%;
+  }
+}

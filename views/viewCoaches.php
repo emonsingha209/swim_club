@@ -1,7 +1,10 @@
 <?php $title = 'View Coach'; ?>
-<?php include 'views/adminMenuHeader.php'; ?>
+<?php include 'views/layoutHeader.php'; ?>
+<div class="d-flex justify-content-between mb-4">
+    <h2>Coaches Information</h2>
+    <a class="btn btn-primary d-flex justify-content-center align-items-center" href="addCoach">Add New Coach</a>
+</div>
 
-<h2 class="mb-4">Coaches Information</h2>
 <div class="table-responsive">
     <table class="table table-bordered">
         <thead>
@@ -37,4 +40,4 @@
     </table>
 </div>
 
-<?php include 'views/adminMenuFooter.php'; ?>
+<?php include 'views/layoutFooter.php'; ?>

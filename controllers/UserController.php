@@ -50,11 +50,22 @@ class UserController
         require_once 'views/adminDashboard.php';
     }
 
+    public function coachDashboard()
+    {
+        $this->checkAuth('coach');
+
+        $username = $_SESSION['name'];
+        
+
+        require_once 'views/coachDashboard.php';
+    }
+
     public function register()
     {
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $parent_id = null;
+            $user_id = null;
             
             $data = [
                 'username' => $_POST['username'],
@@ -67,9 +78,16 @@ class UserController
                 'address' => $_POST['address'],
                 'postcode' => $_POST['postcode'],
                 'role' => $_POST['role']
-            ];          
+            ];              
+            
+            $uniqueuser = $this->model->checkUser($_POST['username']);
 
-            $swimmer_id = $this->model->register($data);
+            if($uniqueuser) {
+               echo "Already username existed";
+            }  
+            else {
+                $user_id = $this->model->register($data);
+            } 
    
             if (isset($_POST['parent_username'])) {
                 $parentdata = [
@@ -84,22 +102,33 @@ class UserController
                     'postcode' => $_POST['parent_postcode'],
                     'role' => $_POST['parent_role']
                 ];
-          
-                $parent_id = $this->model->register($parentdata);
+
+                $uniqueuser = $this->model->checkUser($_POST['parent_username']);
+
+                if($uniqueuser) {
+                   echo "Already username existed";
+                }  
+                else {
+                    $parent_id = $this->model->register($parentdata);
+                }        
+                
             }
 
             if($parent_id) {
                 $result = $this->model->addParentSwimmer($parent_id, $swimmer_id);
            
             }
-            else if($swimmer_id) {
-                $result = $swimmer_id;
-            }            
+            else if($user_id) {
+                $result = $user_id;
+            }  
+            else {
+                $result = false;
+            }          
 
             if ($result) {
                 echo "Registration successful";
             } else {
-                echo "Error";
+                echo "Registration Unsuccessful";
             }
         }
 
@@ -125,15 +154,16 @@ class UserController
     public function viewAllCoach()
     {
         $this->checkAuth('admin');
-        $allcoaches = $this->model->getAllCoach();
-
+        $allcoaches = $this->model->getUserByRole("coach");
+        
         require_once 'views/viewCoaches.php';
     }
 
     public function showUpdateCoachForm($coachId)
     {
+        $this->checkAuth('admin');
         // Get coach details
-        $coach = $this->model->getCoachById($coachId);
+        $coach = $this->model->getUserById($coachId);
 
         // Display update form
         require_once 'views/updateCoachForm.php';
@@ -141,11 +171,13 @@ class UserController
 
     public function updateCoachAction()
     {
+        $this->checkAuth('admin');
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $data = [
                 'id' => $_POST['id'],
                 'username' => $_POST['username'],
                 'password' => $_POST['password'],
+                'current_password' => $_POST['current_password'],
                 'first_name' => $_POST['first_name'],
                 'last_name' => $_POST['last_name'],
                 'email' => $_POST['email'],
@@ -156,20 +188,30 @@ class UserController
                 'role' => $_POST['role']
             ];
 
-            $result = $this->model->updateCoach($data);
+            $result = false;
+
+            $uniqueuser = $this->model->checkUser($_POST['username']);
+
+            if(!$uniqueuser || $uniqueuser == $_POST['id']) {              
+               $result = $this->model->updateCoach($data); 
+            }  
+            else {
+                echo "Already username existed";
+            }                         
 
             if ($result === true) {
                 echo "Coach updated successfully";
                 header("Location: viewallcoach");
                 exit;
             } else {
-                echo "Error updating coach: " . implode(", ", $result);
+                echo "Error updating coach: ";
             }
         }
     }
 
     public function deleteCoach($coachId)
     {
+        $this->checkAuth('admin');
         $result = $this->model->deleteCoach($coachId);
 
         if ($result === true) {
@@ -184,6 +226,7 @@ class UserController
 
     public function addMeet()
     {
+        $this->checkAuth('admin');
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             $data = [
@@ -202,6 +245,460 @@ class UserController
         }
 
         require_once 'views/addMeet.php';
+    }
+
+    public function getAllMeets()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allmeets = $this->model->getAllMeets();
+
+        require_once 'views/viewMeets.php';
+    }
+
+    public function showUpdateMeetForm($meetId)
+    {
+        $this->checkAuth('admin');
+        $meet = $this->model->getMeetById($meetId);
+        
+        require_once 'views/updateMeetForm.php';
+    }
+
+    public function updateMeetAction()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'id' => $_POST['id'],
+                'meet_name' => $_POST['meet_name'],
+                'meet_date' => $_POST['meet_date'],
+                'meet_location' => $_POST['meet_location']
+            ];
+
+            $result = $this->model->updateMeet($data);
+
+            if ($result === true) {
+                echo "Meet updated successfully";
+                header("Location: viewmeets");
+                exit;
+            } else {
+                echo "Error updating meets: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteMeet($meetId)
+    {
+        $this->checkAuth('admin');
+        $result = $this->model->deleteMeet($meetId);
+
+        if ($result === true) {
+            echo "Meet deleted successfully";
+        } else {
+            echo "Error deleting Meet";
+        }
+
+        header("Location: viewmeets");
+        exit;
+    }
+
+    public function addRace()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'race_name' => $_POST['race_name'],
+                'distance' => $_POST['race_distance'],
+                'stroke' => $_POST['race_stroke'],
+                'date' => $_POST['race_date'],
+                'location' => $_POST['race_location'],
+                'meet_id' => $_POST['meet_id']
+            ];
+
+            $result = $this->model->addRace($data);
+
+            if ($result === true) {
+                echo "Added Race successfully";
+            } else {
+                echo "Error: " . implode(", ", $result);
+            }
+        }
+
+        $allmeets = $this->model->getAllMeets();
+
+        require_once 'views/addRace.php';
+    }
+
+    public function getAllRaces()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allRaces = $this->model->getAllRaces();
+        foreach ($allRaces as &$race) {
+            // Getting meet details for each race
+            $meet = $this->model->getMeetById($race['MeetID']);
+            // Adding MeetName to the race details
+            $race['MeetName'] = $meet['MeetName'];
+        }
+        unset($race);
+        require_once 'views/viewRaces.php';
+    }
+
+    public function showUpdateRaceForm($raceId)
+    {
+        $this->checkAuth('admin');
+        $race = $this->model->getRaceById($raceId);
+        $meet = $this->model->getMeetById($race['MeetID']);
+        $allmeets = $this->model->getAllMeets();
+        $race['MeetName'] = $meet['MeetName'];
+        require_once 'views/updateRaceForm.php';
+    }
+
+    public function updateRaceAction()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'id' => $_POST['id'],
+                'race_name' => $_POST['race_name'],
+                'distance' => $_POST['race_distance'],
+                'stroke' => $_POST['race_stroke'],
+                'date' => $_POST['race_date'],
+                'location' => $_POST['race_location'],
+                'meet_id' => $_POST['meet_id']
+            ];
+
+            $result = $this->model->updateRace($data);
+
+            if ($result === true) {
+                echo "Race updated successfully";
+                header("Location: viewraces");
+                exit;
+            } else {
+                echo "Error updating race: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteRace($raceId)
+    {
+        $this->checkAuth('admin');
+        $result = $this->model->deleteRace($raceId);
+
+        if ($result === true) {
+            echo "Race deleted successfully";
+        } else {
+            echo "Error deleting Race";
+        }
+
+        header("Location: viewraces");
+        exit;
+    }
+
+    public function addRaceResult()
+    {
+        $this->checkAuth('admin');        
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $race_id = $_POST['race_id'];
+            $num_swimmers = $_POST['num_swimmers'];
+            $participant_id = $_POST['participant_id'];
+            $participant_hours = $_POST['participant_hours'];
+            $participant_minutes = $_POST['participant_minutes'];
+            $participant_seconds = $_POST['participant_seconds'];
+            $places = $_POST['place'];
+            
+            // Initialize an array to hold combined data
+            $participant_times = [];
+            $data = array();
+            
+            // Combine hours, minutes, and seconds for each participant
+            for ($i = 0; $i < count($participant_hours); $i++) {
+                $time_taken = $participant_hours[$i] . ":" . $participant_minutes[$i] . ":" . $participant_seconds[$i];
+                $participant_times[] = $time_taken;
+            }            
+
+            for ($i = 0; $i < $num_swimmers; $i++) {
+                $time_taken = $participant_hours[$i] . ":" . $participant_minutes[$i] . ":" . $participant_seconds[$i];
+                $participant_data = array(
+                    'race_id' => $race_id,
+                    'swimmer_id' => $participant_id[$i],
+                    'time_taken' => $time_taken,
+                    'place_achieved' => $places[$i]
+                );
+
+                $data[] = $participant_data;
+            }
+
+            foreach ($data as $participant_data) {
+                $result = $this->model->addRaceResult($participant_data);
+                if (!$result) {
+                    // Handle insertion failure
+                    echo "Failed to add race result ";
+                }
+            }
+
+            echo "result added";
+           
+        }
+
+        $allRaces = $this->model->getAllRaces();
+        $allSwimmers = $this->model->getUserByRole("swimmer");
+
+        require_once 'views/addRaceResult.php';
+    }
+
+    public function addRaceResultPage($raceId)
+    {
+        $this->checkAuth('admin');  
+        $raceId = $raceId;
+        require_once 'views/addRaceResult.php';
+    }
+
+    public function getAllRaceResults()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allRaceResults = $this->model->getAllRaceResults();
+        foreach ($allRaceResults as &$raceResult) {
+            // Getting race and swimmer details for each race result
+            $race = $this->model->getRaceById($raceResult['RaceID']);
+            $swimmer = $this->model->getUserById($raceResult['SwimmerID']);
+            $meet = $this->model->getMeetById($race['MeetID']);
+            // Adding RaceName and SwimmerName to the race result details
+            $raceResult['RaceName'] = $race['RaceName'];
+            $raceResult['SwimmerName'] = $swimmer['first_name']." ".$swimmer['last_name'] . " - " .$swimmer['id'];
+            $raceResult['MeetName'] = $meet['MeetName'];
+        }
+        unset($raceResult);
+        require_once 'views/viewRaceResults.php';
+    }
+
+    public function RaceResultByID($raceResultId)
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allRaceResults = $this->model->getRaceResultByRaceID($raceResultId);
+        foreach ($allRaceResults as &$raceResult) {
+            // Getting race and swimmer details for each race result
+            $race = $this->model->getRaceById($raceResult['RaceID']);
+            $swimmer = $this->model->getUserById($raceResult['SwimmerID']);
+            $meet = $this->model->getMeetById($race['MeetID']);
+            // Adding RaceName and SwimmerName to the race result details
+            $raceResult['RaceName'] = $race['RaceName'];
+            $raceResult['SwimmerName'] = $swimmer['first_name']." ".$swimmer['last_name'] . " - " .$swimmer['id'];
+            $raceResult['MeetName'] = $meet['MeetName'];
+        }
+        unset($raceResult);
+        require_once 'views/viewRaceResults.php';
+    }
+
+    public function showUpdateRaceResultForm($raceResultId)
+    {
+        $this->checkAuth('admin');
+        $raceResult = $this->model->getRaceResultById($raceResultId);
+        list($raceResult["hours"], $raceResult["minutes"], $raceResult["seconds"]) = explode(':', $raceResult["TimeTaken"]);
+        $race = $this->model->getRaceById($raceResult['RaceID']);
+        $swimmer = $this->model->getUserById($raceResult['SwimmerID']);
+        $allRaces = $this->model->getAllRaces();
+        $allSwimmers = $this->model->getUserByRole("swimmer");
+        $raceResult['RaceName'] = $race['RaceName'];
+        $raceResult['SwimmerName'] = $swimmer['first_name']." ".$swimmer['last_name'] . " - " .$swimmer['id'];
+        require_once 'views/updateRaceResultForm.php';
+    }
+
+    public function updateRaceResultAction()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $hours = $_POST['hours'];
+            $minutes = $_POST['minutes'];
+            $seconds = $_POST['seconds'];
+            
+            // Combine hours, minutes, and seconds into a single field
+            $time_taken = $hours . ":" . $minutes . ":" . $seconds;
+            $data = [
+                'id' => $_POST['id'],
+                'race_id' => $_POST['race_id'],
+                'swimmer_id' => $_POST['swimmer_id'],
+                'time_taken' => $time_taken,
+                'place_achieved' => $_POST['place_achieved']
+            ];
+
+            $result = $this->model->updateRaceResult($data);
+
+            if ($result === true) {
+                echo "Race result updated successfully";
+                header("Location: viewraces");
+                exit;
+            } else {
+                echo "Error updating race result: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteRaceResult($raceResultId)
+    {
+        $this->checkAuth('admin');
+        $result = $this->model->deleteRaceResult($raceResultId);
+
+        if ($result === true) {
+            echo "Race result deleted successfully";
+        } else {
+            echo "Error deleting race result";
+        }
+
+        header("Location: viewraces");
+        exit;
+    }
+
+    public function addSquad()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            
+            $training_days = implode(",", $_POST['training_days']);
+            
+            $data = [
+                'squad_name' => $_POST['squad_name'],
+                'training_days' => $training_days,
+                'coach_id' => $_POST['coach_id'],
+                'start_time' => $_POST['start_time'],
+                'end_time' => $_POST['end_time']
+            ];          
+
+            $result = $this->model->addSquad($data);           
+            
+            if ($result) {
+                echo "Added Squad successfully";
+            } else {
+                echo "Error: " . implode(", ", $result);
+            }
+        }
+
+        $coaches = $this->model->getUserByRole("coach");
+
+        require_once 'views/addSquad.php';
+    }
+
+    public function getAllSquads()
+    {
+        $this->checkAuth('admin', 'coach');
+        $allsquads = $this->model->getAllSquads();
+
+        foreach ($allsquads as &$squad) {
+            if ($squad['coach_id'] !== null && $squad['coach_id'] != 0) {
+                // Assuming $squad['coach_id'] holds the coach's ID
+                $coach = $this->model->getUserById($squad['coach_id']);
+            
+                // Set the coach_name for the squad
+                $squad['coach_name'] = $coach['first_name']." ".$coach['last_name'] . " - " .$coach['id'];
+            } else {
+                // If coach_id is null, set coach_name to null
+                $squad['coach_name'] = null;
+            }
+            unset($squad);
+        }
+
+        require_once 'views/viewSquads.php';
+    }
+
+    public function getSquadById($squadId)
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $squad = $this->model->getSquadById($squadId);
+
+        $coach = $this->model->getUserById($squad['coach_id']);
+
+        if($coach)
+        {
+            $squad['coach_name'] = $coach['first_name']." ".$coach['last_name'] . " - " .$coach['id'];
+        }        
+
+        $swimmers = $this->model->getSwimmerIdBySquad($squad['squad_id']);
+
+        $allswimmers = $this->model->getUserByRole("swimmer");
+
+        require_once 'views/viewSingleSquad.php';
+    }
+
+    public function showUpdateSquadForm($squadId)
+    {
+        $this->checkAuth('admin');
+        $squad = $this->model->getSquadById($squadId);
+        $coaches = $this->model->getUserByRole("coach");
+        
+        require_once 'views/updateSquadForm.php';
+    }
+
+    public function updateSquadAction()
+    {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $training_days = implode(",", $_POST['training_days']);
+            $data = [
+                'squad_id' => $_POST['squad_id'],
+                'squad_name' => $_POST['squad_name'],
+                'coach_id' => $_POST['coach_id'],
+                'training_days' =>  $training_days,
+                'start_time' => $_POST['start_time'],
+                'end_time' => $_POST['end_time']
+            ];
+
+            $result = $this->model->updateSquad($data);
+
+            if ($result === true) {
+                echo "Squad updated successfully";
+                header("Location: viewsquads");
+                exit;
+            } else {
+                echo "Error updating squad: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteSquad($squadId)
+    {
+        $this->checkAuth('admin');
+        $result = $this->model->deleteSquad($squadId);
+
+        if ($result === true) {
+            echo "Squad deleted successfully";
+        } else {
+            echo "Error deleting Squad";
+        }
+
+        header("Location: viewsquads");
+        exit;
+    }
+
+    public function addSwimmerToSquad($swimmerId, $squadId)
+    {
+        $this->checkAuth('admin');
+        
+        $data = [
+            'squad_id' => $squadId,
+            'id' => $swimmerId
+        ];          
+
+        $result = $this->model->AddUserToSquad($data);           
+        
+        if ($result) {
+            echo "Added to Squad successfully";
+            header("Location: squad?squadId=$squadId");
+            exit;
+        } else {
+            echo "Error: " . implode(", ", $result);
+        }
+    }
+
+    public function removeSwimmerFromSquad($swimmerId, $squadId)
+    {
+        $this->checkAuth('admin');  
+
+        $result = $this->model->RemoveUserFromSquad($swimmerId);     
+        
+        if ($result) {
+            header("Location: squad?squadId=$squadId");
+            exit;
+        } else {
+            echo "Error: " . implode(", ", $result);
+        }
     }
 
     public function logout()

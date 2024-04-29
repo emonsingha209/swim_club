@@ -1,5 +1,5 @@
 <?php $title = 'Update Coach'; ?>
-<?php include 'views/adminMenuHeader.php'; ?>
+<?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mb-4">Update Coach</h2>
 
@@ -21,6 +21,7 @@
         <label for="first_name">First Name:</label>
         <input type="text" class="form-control" id="first_name" name="first_name"
             value="<?php echo $coach['first_name']; ?>">
+        <input type="hidden" name="current_password" value="<?php echo $coach['password']; ?>">
     </div>
 
     <div class="form-group">
@@ -54,16 +55,9 @@
         <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo $coach['postcode']; ?>">
     </div>
 
-    <div class="form-group">
-        <label for="role">Role:</label>
-        <select class="form-control" id="role" name="role">
-            <option value="coach" <?php echo ($coach['role'] == 'coach') ? 'selected' : ''; ?>>Coach</option>
-            <option value="swimmer" <?php echo ($coach['role'] == 'swimmer') ? 'selected' : ''; ?>>Swimmer</option>
-            <!-- Add more options if needed -->
-        </select>
-    </div>
+    <input type="hidden" id="role" name="role" value="coach">
 
     <button type="submit" class="btn btn-primary">Update</button>
 </form>
 
-<?php include 'views/adminMenuFooter.php'; ?>
+<?php include 'views/layoutFooter.php'; ?>

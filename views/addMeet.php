@@ -1,5 +1,5 @@
 <?php $title = 'Add Coach'; ?>
-<?php include 'views/adminMenuHeader.php'; ?>
+<?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mt-4">Add New Meet</h2>
 <form class="mt-4" method="post" action="<?php echo 'addmeet' ?>">
@@ -19,7 +19,7 @@
             <input type="text" class="form-control" id="meet_location" name="meet_location">
         </div>
 
-        <button type="submit" class="btn btn-primary" id="register-btn">Register</button>
+        <button type="submit" class="btn btn-primary" id="add-btn">Add</button>
     </div>
 </form>
-<?php include 'views/adminMenuFooter.php'; ?>
+<?php include 'views/layoutFooter.php'; ?>

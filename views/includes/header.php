@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
-<body>
+<body class="bg-light">
     <?php if ($title !== "Login"): ?>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container flex justify-between">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-xxl flex justify-between">
             <span class="navbar-brand">Swim Club</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,9 @@
                         <a class="nav-link text-white" href="logout">Profile</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="logout">Change Password</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="logout">Logout</a>
                     </li>
                 </ul>
@@ -31,4 +34,4 @@
         </div>
     </nav>
     <?php endif; ?>
-    <div class="container">
+    <div class="container-xxl ">
