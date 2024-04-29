@@ -2,7 +2,7 @@
 <?php include 'views/layoutHeader.php'; ?>
 <div class="d-flex justify-content-between mb-4">
     <h2>Coaches Information</h2>
-    <a class="btn btn-primary d-flex justify-content-center align-items-center" href="addCoach">Add New Coach</a>
+    <a class="btn btn-primary btn-sm d-flex justify-content-center align-items-center" href="addCoach">Add New Coach</a>
 </div>
 
 <div class="table-responsive">
@@ -30,8 +30,8 @@
                 <td class="text-nowrap"><?php echo $coach['address']; ?></td>
                 <td><?php echo $coach['postcode']; ?></td>
                 <td>
-                    <a class="btn btn-primary" href="updatecoach?coachId=<?php echo $coach['id']; ?>">Edit</a>
-                    <a class="btn btn-danger" href=" deletecoach?coachId=<?php echo $coach['id']; ?>"
+                    <a class="btn btn-primary btn-sm" href="updatecoach?coachId=<?php echo $coach['id']; ?>">Edit</a>
+                    <a class="btn btn-danger btn-sm" href=" deletecoach?coachId=<?php echo $coach['id']; ?>"
                         onclick="return confirm('Are you sure you want to delete this coach?')">Delete</a>
                 </td>
             </tr>

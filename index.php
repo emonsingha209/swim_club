@@ -160,7 +160,7 @@ switch ($route) {
         $squadId = isset($query['squadId']) ? $query['squadId'] : null;
         $userController->getSquadById($squadId);
         break; 
-    case 'swim_management/squadformupdate':
+    case 'swim_management/sqdformupdate':
         $userController->updateSquadAction();
         break;
     
@@ -192,7 +192,62 @@ switch ($route) {
         $swimmerId = isset($query['swimmerId']) ? $query['swimmerId'] : null;
         $squadId = isset($query['squadId']) ? $query['squadId'] : null;
         $userController->removeSwimmerFromSquad($swimmerId, $squadId);
+        break;  
+    case 'swim_management/sessionform':
+        $userController->addTrainingSessionAction();
+        break;  
+    case strpos($route, 'swim_management/addsession') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $userController->addTrainingSession($squadId);
+        break;
+    case 'swim_management/viewsessions':
+        $userController->getAllTrainingSessions();
         break;    
+    case 'swim_management/sessionformupdate':
+        $userController->updateTrainingSessionAction();
+        break;    
+    case strpos($route, 'swim_management/updatesession') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $sessionId = isset($query['sessionId']) ? $query['sessionId'] : null;
+        $userController->showUpdateTrainingSessionForm($sessionId);
+        break;    
+    case strpos($route, 'swim_management/deletesession') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $sessionId = isset($query['sessionId']) ? $query['sessionId'] : null;
+        $userController->deleteTrainingSession($sessionId);
+        break;        
+    case 'swim_management/addperformance':
+        $userController->addTrainingPerformanceAction();
+        break;
+    case strpos($route, 'swim_management/performanceform') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $squadId = isset($query['squadId']) ? $query['squadId'] : null;
+        $sessionId = isset($query['sessionId']) ? $query['sessionId'] : null;
+        $userController->addTrainingPerformance($sessionId, $squadId);
+        break; 
+    case 'swim_management/viewperformances':
+        $userController->getAllTrainingPerformances();
+        break;    
+    case strpos($route, 'swim_management/updateperformance') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $performanceId = isset($query['performanceId']) ? $query['performanceId'] : null;
+        $userController->showUpdateTrainingPerformanceForm($performanceId);
+        break;    
+    case strpos($route, 'swim_management/updateperformanceaction') === 0:
+        $userController->updateTrainingPerformanceAction();
+        break;    
+    case strpos($route, 'swim_management/deleteperformance') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $performanceId = isset($query['performanceId']) ? $query['performanceId'] : null;
+        $userController->deleteTrainingPerformance($performanceId);
+        break;        
     default:
         echo "404 Not Found";
         break;

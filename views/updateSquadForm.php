@@ -3,15 +3,17 @@
 
 <h2 class="mb-4">Update Squad</h2>
 
-<form action="squadformupdate" method="POST">
+<form action="sqdformupdate" method="POST">
     <div class="mb-3">
         <label for="squad_name" class="form-label">Squad Name:</label>
         <input type="text" class="form-control" id="squad_name" name="squad_name"
-            value="<?php echo $squad['squad_name']; ?>" required>
+            value="<?php echo $squad['squad_name']; ?>" <?php echo ($_SESSION['role'] != 'admin') ? 'disabled' : ''; ?>
+            required>
     </div>
     <div class="mb-3">
         <label for="coach_id" class="form-label">Coach:</label>
-        <select class="form-select" id="coach_id" name="coach_id">
+        <select class="form-select" id="coach_id" name="coach_id"
+            <?php echo ($_SESSION['role'] != 'admin') ? 'disabled' : ''; ?>>
             <option value="">Not assigned yet</option>
             <?php foreach ($coaches as $coach): ?>
             <option value="<?php echo $coach['id']; ?>"
@@ -47,7 +49,7 @@
             required>
     </div>
     <input type="hidden" name="squad_id" value="<?php echo $squad['squad_id']; ?>">
-    <button type="submit" class="btn btn-primary">Update Squad</button>
+    <button type="submit" class="btn btn-primary ">Update Squad</button>
 </form>
 
 <?php include 'views/layoutFooter.php'; ?>

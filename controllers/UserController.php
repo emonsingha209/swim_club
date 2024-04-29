@@ -600,7 +600,7 @@ class UserController
 
     public function getSquadById($squadId)
     {
-        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $this->checkAuth('admin', 'coach');
         $squad = $this->model->getSquadById($squadId);
 
         $coach = $this->model->getUserById($squad['coach_id']);
@@ -608,7 +608,20 @@ class UserController
         if($coach)
         {
             $squad['coach_name'] = $coach['first_name']." ".$coach['last_name'] . " - " .$coach['id'];
-        }        
+            if (!$this->checkCoachPermission($coach['id'])) {
+                echo "Access denied. You do not have permission to view this squad.";
+                exit;
+            }
+        }
+        else
+        {
+            if($_SESSION['role'] != "admin")
+            {
+                echo "Access denied. You do not have permission to view this squad.".$_SESSION['user_id'];
+                exit;
+            }
+        }
+
 
         $swimmers = $this->model->getSwimmerIdBySquad($squad['squad_id']);
 
@@ -619,9 +632,13 @@ class UserController
 
     public function showUpdateSquadForm($squadId)
     {
-        $this->checkAuth('admin');
+        $this->checkAuth('admin', 'coach');
         $squad = $this->model->getSquadById($squadId);
         $coaches = $this->model->getUserByRole("coach");
+        if (!$this->checkCoachPermission($squad['coach_id'])) {
+            echo "Access denied. You do not have permission to view this squad performance.";
+            exit;
+        }
         
         require_once 'views/updateSquadForm.php';
     }
@@ -689,7 +706,7 @@ class UserController
 
     public function removeSwimmerFromSquad($swimmerId, $squadId)
     {
-        $this->checkAuth('admin');  
+        $this->checkAuth('admin', 'coach');  
 
         $result = $this->model->RemoveUserFromSquad($swimmerId);     
         
@@ -700,6 +717,191 @@ class UserController
             echo "Error: " . implode(", ", $result);
         }
     }
+
+    public function addTrainingSession($squadId)
+    {
+        $this->checkAuth('coach');
+        $squadId = $squadId;
+        require_once 'views/addTrainingSession.php';
+    }
+
+    public function addTrainingSessionAction()
+    {
+        $this->checkAuth('coach');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            
+            $data = [
+                'date' => $_POST['session_date'],
+                'distance' => $_POST['session_distance'],
+                'stroke' => $_POST['session_stroke'],
+                'squad_id' => $_POST['squad_id']
+            ];          
+
+            $result = $this->model->addTrainingSession($data);
+            
+            if ($result === true) {
+                echo "Added Training Session successfully";
+            } else {
+                echo "Error: " . implode(", ", $result);
+            }
+        }
+
+        require_once 'views/addTrainingSession.php';
+    }
+
+    public function getAllTrainingSessions()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allsessions = $this->model->getAllTrainingSessions();
+
+        require_once 'views/viewTrainingSessions.php';
+    }
+
+    public function showUpdateTrainingSessionForm($sessionId)
+    {
+        $this->checkAuth('coach');
+        $session = $this->model->getTrainingSessionById($sessionId);
+        
+        require_once 'views/updateTrainingSessionForm.php';
+    }
+
+    public function updateTrainingSessionAction()
+    {
+        $this->checkAuth('coach');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'id' => $_POST['id'],
+                'date' => $_POST['date'],
+                'distance' => $_POST['distance'],
+                'stroke' => $_POST['stroke'],
+                'squad_id' => $_POST['squad_id']
+            ];
+
+            $result = $this->model->updateTrainingSession($data);
+
+            if ($result === true) {
+                echo "Training Session updated successfully";
+                header("Location: viewsessions");
+                exit;
+            } else {
+                echo "Error updating training session: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteTrainingSession($sessionId)
+    {
+        $this->checkAuth('coach');
+        $result = $this->model->deleteTrainingSession($sessionId);
+
+        if ($result === true) {
+            echo "Training Session deleted successfully";
+        } else {
+            echo "Error deleting Training Session";
+        }
+
+        header("Location: viewsessions");
+        exit;
+    }
+
+    public function addTrainingPerformance($sessionId, $squadId)
+    {
+        $this->checkAuth('coach');
+        $sessionId = $sessionId;
+        $swimmers = $this->model->getSwimmerIdBySquad($squadId);
+        require_once 'views/addTrainingPerformance.php';
+    }
+
+    public function addTrainingPerformanceAction()
+    {
+        $this->checkAuth('coach');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $session_id = $_POST['session_id'];
+            $swimmer_ids = $_POST['swimmer_id'];
+            $time_hours = $_POST['time_hours'];
+            $time_minutes = $_POST['time_minutes'];
+            $time_seconds = $_POST['time_seconds'];
+            $comments = $_POST['comment'];            
+    
+            // Add each training performance
+            foreach ($swimmer_ids as $key => $swimmer_id) {
+                $time_taken = $time_hours[$key] . ':' . $time_minutes[$key] . ':' . $time_seconds[$key];
+                $data = [
+                    'session_id' => $session_id,
+                    'swimmer_id' => $swimmer_id,
+                    'time_taken' => $time_taken,
+                    'comment' => $comments[$key]
+                ];
+                $result = $this->model->addTrainingPerformance($data);
+    
+                if ($result !== true) {
+                    echo "Error: " . implode(", ", $result);
+                    
+                }
+            }
+            echo "Training Performance added successfully";
+        }
+        require_once 'views/addTrainingPerformance.php';
+    }
+
+    public function getAllTrainingPerformances()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+        $allPerformances = $this->model->getAllTrainingPerformances();
+
+        // Assuming you have a view file named 'viewTrainingPerformances.php'
+        require_once 'views/viewTrainingPerformances.php';
+    }
+
+    public function showUpdateTrainingPerformanceForm($performanceId)
+    {
+        $this->checkAuth('coach');
+        $performance = $this->model->getTrainingPerformanceById($performanceId);
+
+        // Assuming you have a view file named 'updateTrainingPerformanceForm.php'
+        require_once 'views/updateTrainingPerformanceForm.php';
+    }
+
+    public function updateTrainingPerformanceAction()
+    {
+        $this->checkAuth('coach');
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                'id' => $_POST['id'],
+                'session_id' => $_POST['session_id'],
+                'swimmer_id' => $_POST['swimmer_id'],
+                'time_taken' => $_POST['time_taken'],
+                'comment' => $_POST['comment']
+            ];
+
+            $result = $this->model->updateTrainingPerformance($data);
+
+            if ($result === true) {
+                echo "Training Performance updated successfully";
+                header("Location: viewperformances");
+                exit;
+            } else {
+                echo "Error updating training performance: " . implode(", ", $result);
+            }
+        }
+    }
+
+    public function deleteTrainingPerformance($performanceId)
+    {
+        $this->checkAuth('coach');
+        $result = $this->model->deleteTrainingPerformance($performanceId);
+
+        if ($result === true) {
+            echo "Training Performance deleted successfully";
+        } else {
+            echo "Error deleting Training Performance";
+        }
+
+        header("Location: viewperformances");
+        exit;
+    }
+
+
 
     public function logout()
     {
@@ -722,6 +924,26 @@ class UserController
         }
     }
 
+    private function checkCoachPermission($coachId)
+    {
+        $userRole = $this->model->getRole();
+
+        // Club administrators and coaches can view any swimmer's performance
+        if ($userRole == 'admin') {
+            return true;
+        }
+
+        // Parents and adult swimmers can only view their own performance
+        if ($userRole == 'coach') {
+            $userId = $_SESSION["user_id"];
+            if ($userId == $coachId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function checkSwimmerPermission($swimmerId)
     {
         $userRole = $this->model->getRole();
@@ -732,7 +954,15 @@ class UserController
         }
 
         // Parents and adult swimmers can only view their own performance
-        if ($userRole == 'parent' || $userRole == 'swimmer') {
+        if ($userRole == 'parent') {
+            // $swimmers = $this->model->getSwimmerIdBySquad($squad['squad_id']);
+            $userId = $_SESSION["user_id"];
+            if ($userId == $swimmerId) {
+                return true;
+            }
+        }
+
+        if ($userRole == 'swimmer') {
             $userId = $_SESSION["user_id"];
             if ($userId == $swimmerId) {
                 return true;

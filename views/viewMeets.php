@@ -3,7 +3,7 @@
 
 <div class="d-flex justify-content-between mb-4">
     <h2>Meets Information</h2>
-    <a class="btn btn-primary d-flex justify-content-center align-items-center" href="addmeet">Add New Meet</a>
+    <a class="btn btn-primary btn-sm d-flex justify-content-center align-items-center" href="addmeet">Add New Meet</a>
 </div>
 
 <div class="table-responsive">
@@ -23,8 +23,8 @@
                 <td class="text-nowrap"><?php echo $meet['MeetDate']; ?></td>
                 <td><?php echo $meet['Location']; ?></td>
                 <td>
-                    <a class="btn btn-primary" href="updatemeet?meetId=<?php echo $meet['MeetID']; ?>">Edit</a>
-                    <a class="btn btn-danger" href=" deletemeet?meetId=<?php echo $meet['MeetID']; ?>"
+                    <a class="btn btn-primary btn-sm" href="updatemeet?meetId=<?php echo $meet['MeetID']; ?>">Edit</a>
+                    <a class="btn btn-danger btn-sm" href=" deletemeet?meetId=<?php echo $meet['MeetID']; ?>"
                         onclick="return confirm('Are you sure you want to delete this meet?')">Delete</a>
                 </td>
             </tr>

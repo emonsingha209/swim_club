@@ -11,7 +11,9 @@
                 <th>Race Name</th>
                 <th>Time Taken</th>
                 <th>Place Achieved</th>
+                <?php if ($_SESSION['role'] == 'admin'): ?>
                 <th>Action</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
@@ -35,12 +37,15 @@
                     }
                     ?>
                 </td>
+                <?php if ($_SESSION['role'] == 'admin'): ?>
                 <td>
-                    <a class="btn btn-primary"
+                    <a class="btn btn-primary btn-sm"
                         href="updaterresult?raceresultId=<?php echo $raceResult['ResultID']; ?>">Edit</a>
-                    <a class="btn btn-danger" href="deleterresult?raceresultId=<?php echo $raceResult['ResultID']; ?>"
+                    <a class="btn btn-danger btn-sm"
+                        href="deleterresult?raceresultId=<?php echo $raceResult['ResultID']; ?>"
                         onclick="return confirm('Are you sure you want to delete this race?')">Delete</a>
-                </td>
+                </td>n</th>
+                <?php endif; ?>
             </tr>
             <?php endforeach; ?>
         </tbody>

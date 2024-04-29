@@ -734,6 +734,219 @@ class User
         }
     }
 
+    public function addTrainingSession($data)
+    {
+        $errors = [];
+
+        if (empty($data['date'])) {
+            $errors[] = "Date is required";
+        }
+
+        if (empty($data['distance'])) {
+            $errors[] = "Distance is required";
+        }
+
+        if (empty($data['stroke'])) {
+            $errors[] = "Stroke is required";
+        }
+
+        if (empty($data['squad_id'])) {
+            $errors[] = "Squad ID is required";
+        }
+
+        if (empty($errors)) {
+
+            $sql = "INSERT INTO training_session (Date, Distance, Stroke, Squad_id)
+                    VALUES (?, ?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("sdsi", $data['date'], $data['distance'], $data['stroke'], $data['squad_id']);
+
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+
+        return $errors;
+    }
+
+    public function getAllTrainingSessions()
+    {
+        $query = "SELECT ts.*, s.squad_name 
+        FROM training_session ts 
+        JOIN squad s ON ts.Squad_id = s.squad_id";
+        $result = $this->conn->query($query);
+        $sessions = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $sessions[] = $row;
+            }
+        }
+        return $sessions;
+    }
+
+    public function getTrainingSessionById($sessionId)
+    {
+        $query = "SELECT * FROM training_session WHERE SessionID = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $sessionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $session = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $session;
+    }
+
+    public function updateTrainingSession($data)
+    {
+        $errors = [];
+
+        if (empty($data['date'])) {
+            $errors[] = "Date is required";
+        }
+
+        if (empty($data['distance'])) {
+            $errors[] = "Distance is required";
+        }
+
+        if (empty($data['stroke'])) {
+            $errors[] = "Stroke is required";
+        }
+
+        if (empty($data['squad_id'])) {
+            $errors[] = "Squad ID is required";
+        }
+
+        if (empty($errors)) {
+            $sql = "UPDATE training_session SET Date=?, Distance=?, Stroke=?, Squad_id=? WHERE SessionID=?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("sdsii", $data['date'], $data['distance'], $data['stroke'], $data['squad_id'], $data['id']);
+
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+
+        return $errors;
+    }
+
+    public function deleteTrainingSession($sessionId)
+    {
+        $sql = "DELETE FROM training_session WHERE SessionID=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $sessionId);
+
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public function addTrainingPerformance($data)
+    {
+        $errors = [];
+
+        if (empty($data['session_id'])) {
+            $errors[] = "Session ID is required";
+        }
+
+        if (empty($data['swimmer_id'])) {
+            $errors[] = "Swimmer ID is required";
+        }
+
+        if (empty($errors)) {
+            $sql = "INSERT INTO training_performance (SessionID, Swimmer_id, TimeTaken, Comment)
+                    VALUES (?, ?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("iiss", $data['session_id'], $data['swimmer_id'], $data['time_taken'], $data['comment']);
+
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+
+        return $errors;
+    }
+
+    public function getAllTrainingPerformances()
+    {
+        $query = "SELECT tp.*, ts.Date AS SessionDate, u.username AS SwimmerName 
+                FROM training_performance tp 
+                JOIN training_session ts ON tp.SessionID = ts.SessionID 
+                JOIN users u ON tp.Swimmer_id = u.id";
+        $result = $this->conn->query($query);
+        $performances = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $performances[] = $row;
+            }
+        }
+        return $performances;
+    }
+
+    public function getTrainingPerformanceById($performanceId)
+    {
+        $query = "SELECT * FROM training_performance WHERE PerformanceID = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $performanceId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $performance = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $performance;
+    }
+
+    public function updateTrainingPerformance($data)
+    {
+        $errors = [];
+
+        if (empty($data['session_id'])) {
+            $errors[] = "Session ID is required";
+        }
+
+        if (empty($data['swimmer_id'])) {
+            $errors[] = "Swimmer ID is required";
+        }
+
+        if (empty($errors)) {
+            $sql = "UPDATE training_performance SET SessionID=?, Swimmer_id=?, TimeTaken=?, Comment=? WHERE PerformanceID=?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("iissi", $data['session_id'], $data['swimmer_id'], $data['time_taken'], $data['comment'], $data['id']);
+
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+
+        return $errors;
+    }
+
+    public function deleteTrainingPerformance($performanceId)
+    {
+        $sql = "DELETE FROM training_performance WHERE PerformanceID=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $performanceId);
+
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
 
     public function isAdultSwimmer($userId)
     {

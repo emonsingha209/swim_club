@@ -5,9 +5,12 @@
     <div class="card-header py-3">
         <div class="d-flex justify-content-between">
             <h2>Squad Information</h2>
-            <button id="toggleSwimmerList" class="btn btn-primary d-flex justify-content-center align-items-center">Add
+            <?php if ($_SESSION['role'] == 'admin'): ?>
+            <button id="toggleSwimmerList"
+                class="btn btn-primary btn-sm d-flex justify-content-center align-items-center">Add
                 Swimmers to Squad
             </button>
+            <?php endif; ?>
         </div>
     </div>
     <div class="card-body">
@@ -71,7 +74,7 @@
                         ?>
                     </td>
                     <td>
-                        <a class="btn btn-primary"
+                        <a class="btn btn-primary btn-sm"
                             href="addswimmertosquad?swimmerId=<?php echo $allswimmer['id']; ?>&squadId=<?php echo $squad['squad_id']; ?>">Add
                             to Squad</a>
                     </td>
@@ -111,7 +114,7 @@
                     <td class="text-nowrap"><?php echo $swimmer['address']; ?></td>
                     <td><?php echo $swimmer['postcode']; ?></td>
                     <td>
-                        <a class="btn btn-danger"
+                        <a class="btn btn-danger btn-sm"
                             href="removeswimmerfromsquad?swimmerId=<?php echo $swimmer['id']; ?>&squadId=<?php echo $squad['squad_id']; ?>"
                             onclick="return confirm('Are you sure you want to delete this swimmer?')">Remove From
                             Squad</a>
