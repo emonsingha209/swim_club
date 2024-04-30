@@ -25,9 +25,9 @@ class UserController
                 {
                     header("Location: coachDashboard");
                 }
-                else if($userRole === "parent" || $userRole === "swimmer")
+                else if($userRole === "swimmer")
                 {
-                    header("Location: swimmerDashboard");
+                    header("Location: swimmerdashboard");
                 }
                 exit;            
             } else {
@@ -58,6 +58,16 @@ class UserController
         
 
         require_once 'views/coachDashboard.php';
+    }
+
+    public function swimmerDashboard()
+    {
+        $this->checkAuth('swimmer');
+
+        $username = $_SESSION['name'];
+        
+
+        require_once 'views/swimmerDashboard.php';
     }
 
     public function register()
@@ -808,7 +818,7 @@ class UserController
     {
         $this->checkAuth('coach');
         $sessionId = $sessionId;
-        $swimmers = $this->model->getSwimmerIdBySquad($squadId);
+        $swimmers = $this->model->getSwimmerIdByForPerformance($sessionId, $squadId);
         require_once 'views/addTrainingPerformance.php';
     }
 
@@ -844,21 +854,19 @@ class UserController
         require_once 'views/addTrainingPerformance.php';
     }
 
-    public function getAllTrainingPerformances()
+    public function getAllTrainingPerformances($sessionId)
     {
         $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
-        $allPerformances = $this->model->getAllTrainingPerformances();
-
-        // Assuming you have a view file named 'viewTrainingPerformances.php'
+        $swimmers = $this->model->getSwimmerIdBySquadAndSession($sessionId);
+        
         require_once 'views/viewTrainingPerformances.php';
     }
 
     public function showUpdateTrainingPerformanceForm($performanceId)
     {
         $this->checkAuth('coach');
-        $performance = $this->model->getTrainingPerformanceById($performanceId);
-
-        // Assuming you have a view file named 'updateTrainingPerformanceForm.php'
+        $trainingPerformance = $this->model->getTrainingPerformanceById($performanceId);
+        
         require_once 'views/updateTrainingPerformanceForm.php';
     }
 
@@ -878,8 +886,6 @@ class UserController
 
             if ($result === true) {
                 echo "Training Performance updated successfully";
-                header("Location: viewperformances");
-                exit;
             } else {
                 echo "Error updating training performance: " . implode(", ", $result);
             }
@@ -897,8 +903,6 @@ class UserController
             echo "Error deleting Training Performance";
         }
 
-        header("Location: viewperformances");
-        exit;
     }
 
 

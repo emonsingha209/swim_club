@@ -945,7 +945,45 @@ class User
         }
     }
 
+    public function getSwimmerIdByForPerformance($sessionId, $squadId)
+    {
+        $query = "SELECT * FROM users 
+                WHERE role = 'swimmer' 
+                AND squad_id = ? 
+                AND id NOT IN (
+                    SELECT Swimmer_id 
+                    FROM training_performance 
+                    WHERE SessionID = ?
+                )";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("ii", $squadId, $sessionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
 
+    public function getSwimmerIdBySquadAndSession($sessionId)
+    {
+        $query = "SELECT tp.*, u.username 
+        FROM training_performance tp 
+        INNER JOIN users u ON tp.Swimmer_id = u.id 
+        WHERE tp.SessionID = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $sessionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
 
 
     public function isAdultSwimmer($userId)

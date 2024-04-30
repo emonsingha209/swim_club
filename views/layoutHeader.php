@@ -20,6 +20,13 @@
                 <li class="list-group-item"><a class="nav-link" href="viewsquads">Squads</a></li>
                 <li class="list-group-item"><a class="nav-link" href="viewsessions">Training Session</a></li>
             </ul>
+            <?php elseif ($_SESSION['role'] == 'swimmer'): ?>
+            <h3><a class="nav-link mb-3" href="coachDashboard">Dashboard</a></h3>
+            <ul class="list-group">
+                <li class="list-group-item"><a class="nav-link" href="viewraces">Races</a></li>
+                <li class="list-group-item"><a class="nav-link" href="viewsquads">Squads</a></li>
+                <li class="list-group-item"><a class="nav-link" href="viewsessions">Training Session</a></li>
+            </ul>
             <?php endif; ?>
         </div>
     </aside>

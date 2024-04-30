@@ -30,6 +30,8 @@
             <td>
                 <a href="performanceform?sessionId=<?php echo $session['SessionID']; ?>&squadId=<?php echo $session['Squad_id']; ?>"
                     class="btn btn-success btn-sm">Add Performance</a>
+                <a href="viewperformances?sessionId=<?php echo $session['SessionID']; ?>"
+                    class="btn btn-success btn-sm">View Performance</a>
 
                 <a href="updatesession?sessionId=<?php echo $session['SessionID']; ?>"
                     class="btn btn-primary btn-sm">Edit</a>

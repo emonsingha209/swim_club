@@ -12,7 +12,7 @@
 <body class="bg-light">
     <?php if ($title !== "Login"): ?>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-        <div class="container-xxl flex justify-between">
+        <div class="container-xxl flex justify-between px-3">
             <span class="navbar-brand">Swim Club</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

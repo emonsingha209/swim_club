@@ -54,6 +54,9 @@ switch ($route) {
     case 'swim_management/coachDashboard':
         $userController->coachDashboard();
         break;
+    case 'swim_management/swimmerdashboard':
+        $userController->swimmerDashboard();
+        break;
     case 'swim_management/viewallcoach':
         $userController->viewAllCoach();
         break;           
@@ -230,16 +233,19 @@ switch ($route) {
         $sessionId = isset($query['sessionId']) ? $query['sessionId'] : null;
         $userController->addTrainingPerformance($sessionId, $squadId);
         break; 
-    case 'swim_management/viewperformances':
-        $userController->getAllTrainingPerformances();
-        break;    
+    case strpos($route, 'swim_management/viewperformances') === 0:
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $sessionId = isset($query['sessionId']) ? $query['sessionId'] : null;
+        $userController->getAllTrainingPerformances($sessionId);
+        break;
     case strpos($route, 'swim_management/updateperformance') === 0:
         $parts = parse_url($route);
         parse_str($parts['query'], $query);
         $performanceId = isset($query['performanceId']) ? $query['performanceId'] : null;
         $userController->showUpdateTrainingPerformanceForm($performanceId);
         break;    
-    case strpos($route, 'swim_management/updateperformanceaction') === 0:
+    case 'swim_management/actionupdateperformance':
         $userController->updateTrainingPerformanceAction();
         break;    
     case strpos($route, 'swim_management/deleteperformance') === 0:
