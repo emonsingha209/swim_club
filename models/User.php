@@ -243,15 +243,21 @@ class User
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("ssssssssss", $applicant['username'], $applicant['password'], $applicant['first_name'], $applicant['last_name'], $applicant['email'], $applicant['dob'], $applicant['phone'], $applicant['address'], $applicant['postcode'], $applicant['role']);
-            $stmt->execute();
+
+            if ($stmt->execute()) {
+                $insert_id = $this->conn->insert_id;
+            } else {
+                $insert_id = null;
+            }
 
             // Delete from applicants table
             $sql = "UPDATE applicants SET approved = TRUE WHERE id = ?";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("i", $applicant_id);
-            return $stmt->execute();
+            $stmt->execute();
 
-            return true;
+            return $insert_id;
+
         } else {
             return false; // Applicant not found
         }
@@ -432,11 +438,11 @@ class User
         return $errors;
     }
 
-    public function deleteCoach($coachId)
+    public function deleteUser($id)
     {
         $sql = "DELETE FROM users WHERE id=?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $coachId);
+        $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
             return true; // Success

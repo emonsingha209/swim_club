@@ -160,12 +160,18 @@ class UserController
         if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_applicant'])) {
             $applicant_id = $_POST['applicant_id'];
 
+            $parent_id = null;
+
             // Call the model method to approve the applicant
             $result = $this->model->approveApplicant($applicant_id);
 
             if($_POST['parent_id']) {
                 $parent_id = $_POST['parent_id'];
                 $result2 = $this->model->approveApplicant($parent_id);
+            }
+
+            if($parent_id) {
+                $relation = $this->model->addParentSwimmer($result, $result2);           
             }
 
             if ($result) {
@@ -195,7 +201,7 @@ class UserController
         if ($result === true) {
             echo "Rejected";
         } else {
-            echo "Error deleting coach";
+            echo "Error deleting";
         }
 
         header("Location: manageapplicants");
@@ -267,27 +273,22 @@ class UserController
 
             if ($result === true) {
                 echo "Coach updated successfully";
-                header("Location: viewallcoach");
-                exit;
             } else {
                 echo "Error updating coach: ";
             }
         }
     }
 
-    public function deleteCoach($coachId)
+    public function deleteUser($id)
     {
         $this->checkAuth('admin');
-        $result = $this->model->deleteCoach($coachId);
+        $result = $this->model->deleteUser($id);
 
         if ($result === true) {
-            echo "Coach deleted successfully";
+            echo "User deleted successfully";
         } else {
             echo "Error deleting coach";
         }
-
-        header("Location: viewallcoach");
-        exit;
     }
 
     public function addMeet()

@@ -67,22 +67,22 @@ switch ($route) {
     case 'swim_management/viewallswimmer':
         $userController->viewAllSwimmer();
         break;           
-    case strpos($route, 'swim_management/updatecoach') === 0:
+    case strpos($route, 'swim_management/updateuser') === 0:
         // Extract the coach ID from the URL
         $parts = parse_url($route);
         parse_str($parts['query'], $query);
-        $coachId = isset($query['coachId']) ? $query['coachId'] : null;
-        $userController->showUpdateCoachForm($coachId);
+        $id = isset($query['id']) ? $query['id'] : null;
+        $userController->showUpdateCoachForm($id);
         break;    
     case 'swim_management/coachformupdate':
         $userController->updateCoachAction();
         break;
-    case strpos($route, 'swim_management/deletecoach') === 0:
+    case strpos($route, 'swim_management/deleteuser') === 0:
         // Extract the coach ID from the URL
         $parts = parse_url($route);
         parse_str($parts['query'], $query);
-        $coachId = isset($query['coachId']) ? $query['coachId'] : null;
-        $userController->deleteCoach($coachId);
+        $id = isset($query['id']) ? $query['id'] : null;
+        $userController->deleteUser($id);
         break; 
     case 'swim_management/addmeet':
         $userController->addMeet();

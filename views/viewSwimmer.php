@@ -30,10 +30,9 @@
                     <td class="text-nowrap"><?php echo $swimmer['address']; ?></td>
                     <td><?php echo $swimmer['postcode']; ?></td>
                     <td>
-                        <a class="btn btn-primary btn-sm"
-                            href="updatecoach?coachId=<?php echo $swimmer['id']; ?>">Edit</a>
-                        <a class="btn btn-danger btn-sm" href=" deletecoach?coachId=<?php echo $swimmer['id']; ?>"
-                            onclick="return confirm('Are you sure you want to delete this coach?')">Delete</a>
+                        <a class="btn btn-primary btn-sm" href="updateuser?id=<?php echo $swimmer['id']; ?>">Edit</a>
+                        <a class="btn btn-danger btn-sm" href=" deleteuser?id=<?php echo $swimmer['id']; ?>"
+                            onclick="return confirm('Are you sure you want to delete this swimmer?')">Delete</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>

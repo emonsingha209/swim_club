@@ -32,9 +32,8 @@
                     <td class="text-nowrap"><?php echo $coach['address']; ?></td>
                     <td><?php echo $coach['postcode']; ?></td>
                     <td>
-                        <a class="btn btn-primary btn-sm"
-                            href="updatecoach?coachId=<?php echo $coach['id']; ?>">Edit</a>
-                        <a class="btn btn-danger btn-sm" href=" deletecoach?coachId=<?php echo $coach['id']; ?>"
+                        <a class="btn btn-primary btn-sm" href="updateuser?id=<?php echo $coach['id']; ?>">Edit</a>
+                        <a class="btn btn-danger btn-sm" href=" deleteuser?id=<?php echo $coach['id']; ?>"
                             onclick="return confirm('Are you sure you want to delete this coach?')">Delete</a>
                     </td>
                 </tr>
