@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title><?php echo $title; ?></title>
@@ -7,10 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/all.min.css">
 </head>
 
 <body class="bg-light">
-    <?php if ($title !== "Login"): ?>
+    <?php if ($title !== "Login" && $title !== "Swim Club Membership Registration"): ?>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-xxl flex justify-between px-3">
             <span class="navbar-brand">Swim Club</span>
@@ -33,5 +34,6 @@
             </div>
         </div>
     </nav>
-    <?php endif; ?>
-    <div class="container-xxl ">
+    <div class="container-xxl">
+        <?php endif; ?>
+        <div>

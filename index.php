@@ -51,6 +51,19 @@ switch ($route) {
     case 'swim_management/admindashboard':
         $userController->adminDashboard();
         break;
+    case 'swim_management/manageapplicants':
+        $userController->manageApplicants();
+        break;
+    case 'swim_management/handle_approve':
+        $userController->handleApprove();
+        break;
+    case strpos($route, 'swim_management/rejectapplicants') === 0:
+        // Extract the coach ID from the URL
+        $parts = parse_url($route);
+        parse_str($parts['query'], $query);
+        $id = isset($query['id']) ? $query['id'] : null;
+        $userController->rejectApplicants($id);
+        break; 
     case 'swim_management/coachDashboard':
         $userController->coachDashboard();
         break;
@@ -59,6 +72,9 @@ switch ($route) {
         break;
     case 'swim_management/viewallcoach':
         $userController->viewAllCoach();
+        break;  
+    case 'swim_management/viewallswimmer':
+        $userController->viewAllSwimmer();
         break;           
     case strpos($route, 'swim_management/updatecoach') === 0:
         // Extract the coach ID from the URL
@@ -254,6 +270,12 @@ switch ($route) {
         $performanceId = isset($query['performanceId']) ? $query['performanceId'] : null;
         $userController->deleteTrainingPerformance($performanceId);
         break;        
+    case 'swim_management/performancedata':
+        $userController->getPerformanceBySwimmer();
+        break; 
+    case 'swim_management/dataraceresult':
+        $userController->getRaceResultBySwimmerID();
+        break; 
     default:
         echo "404 Not Found";
         break;

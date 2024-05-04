@@ -45,7 +45,16 @@ class UserController
         $this->checkAuth('admin');
 
         $username = $_SESSION['name'];
+
+        $swimmer = "swimmer";
+
+        $swimmernumber = $this->model->getUserCountByRole($swimmer);     
         
+        $coach = "coach";
+
+        $coachnumber = $this->model->getUserCountByRole($coach); 
+
+        $squadnumber = $this->model->getSquadCount(); 
 
         require_once 'views/adminDashboard.php';
     }
@@ -64,19 +73,13 @@ class UserController
     {
         $this->checkAuth('swimmer');
 
-        $username = $_SESSION['name'];
-        
+        $username = $_SESSION['name'];     
 
         require_once 'views/swimmerDashboard.php';
     }
 
-    public function register()
-    {
+    public function register() {
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-            $parent_id = null;
-            $user_id = null;
-            
             $data = [
                 'username' => $_POST['username'],
                 'password' => $_POST['password'],
@@ -88,68 +91,115 @@ class UserController
                 'address' => $_POST['address'],
                 'postcode' => $_POST['postcode'],
                 'role' => $_POST['role']
-            ];              
-            
+            ];
+
             $uniqueuser = $this->model->checkUser($_POST['username']);
 
             if($uniqueuser) {
-               echo "Already username existed";
-            }  
-            else {
-                $user_id = $this->model->register($data);
-            } 
-   
-            if (isset($_POST['parent_username'])) {
-                $parentdata = [
-                    'username' => $_POST['parent_username'],
-                    'password' => $_POST['parent_password'],
-                    'first_name' => $_POST['parent_first_name'],
-                    'last_name' => $_POST['parent_last_name'],
-                    'email' => $_POST['parent_email'],   
-                    'dob' => isset($_POST['parent_dob']) ? $_POST['parent_dob'] : '1970-01-01',
-                    'phone' => $_POST['parent_phone'],
-                    'address' => $_POST['parent_address'],
-                    'postcode' => $_POST['parent_postcode'],
-                    'role' => $_POST['parent_role']
-                ];
+               echo "Username already exists";
+               return;
+            }
 
-                $uniqueuser = $this->model->checkUser($_POST['parent_username']);
+            // Check if the role is "swimmer" or "parent"
+            if ($_POST['role'] === 'swimmer' || $_POST['role'] === 'parent') {
+                // Store in applicants table
+                $applicant_id = $this->model->storeApplicant($data);
 
-                if($uniqueuser) {
-                   echo "Already username existed";
-                }  
-                else {
-                    $parent_id = $this->model->register($parentdata);
-                }        
+                $parent_id = null;
+
+                if (isset($_POST['parent_username'])) {
+                    $parentdata = [
+                        'username' => $_POST['parent_username'],
+                        'password' => $_POST['parent_password'],
+                        'first_name' => $_POST['parent_first_name'],
+                        'last_name' => $_POST['parent_last_name'],
+                        'email' => $_POST['parent_email'],   
+                        'dob' => isset($_POST['parent_dob']) ? $_POST['parent_dob'] : '1970-01-01',
+                        'phone' => $_POST['parent_phone'],
+                        'address' => $_POST['parent_address'],
+                        'postcode' => $_POST['parent_postcode'],
+                        'role' => $_POST['parent_role']
+                    ];
+    
+                    $uniqueuser = $this->model->checkUser($_POST['parent_username']);
+    
+                    if($uniqueuser) {
+                       echo "Already username existed";
+                    }  
+                    else {
+                        $parent_id = $this->model->storeApplicant($parentdata);
+                        $addParent = $this->model->addParentForAppli($parent_id, $applicant_id);
+                    }        
+                    
+                }
+
+                if ($applicant_id && $parent_id) {
+                    echo "Application submitted successfully. Please wait for approval.";
+                } else {
+                    echo "Failed to submit application.";
+                }
+
                 
-            }
+            } else {
+                // For roles other than "swimmer" or "parent", directly register to users table
+                $user_id = $this->model->register($data);
 
-            if($parent_id) {
-                $result = $this->model->addParentSwimmer($parent_id, $swimmer_id);
-           
+                if ($user_id) {
+                    echo "Registration successful";
+                } else {
+                    echo "Registration unsuccessful";
+                }
             }
-            else if($user_id) {
-                $result = $user_id;
-            }  
-            else {
-                $result = false;
-            }          
+        }
+
+        require_once 'views/register.php';  
+    }
+
+    public function handleApprove() {
+        $this->checkAuth('admin');
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_applicant'])) {
+            $applicant_id = $_POST['applicant_id'];
+
+            // Call the model method to approve the applicant
+            $result = $this->model->approveApplicant($applicant_id);
+
+            if($_POST['parent_id']) {
+                $parent_id = $_POST['parent_id'];
+                $result2 = $this->model->approveApplicant($parent_id);
+            }
 
             if ($result) {
-                echo "Registration successful";
+                echo "Applicant approved successfully";
             } else {
-                echo "Registration Unsuccessful";
+                echo "Failed to approve applicant";
             }
+        } else {
+            echo "Invalid request";
         }
+    }
 
-        if($_POST['role'] === "coach" || $_POST['role'] === "swimmer") {
-            require_once 'views/addCoach.php';
-        }
-        else {
-            require_once 'views/register.php';
-        }
+    public function manageApplicants()
+    {
+        $this->checkAuth('admin');
 
+        $applicants = $this->model->getApplicantsByRole("swimmer");
         
+        require_once 'views/manageApplicants.php';
+    }
+
+    public function rejectApplicants($id)
+    {
+        $this->checkAuth('admin');
+        $result = $this->model->rejectApplicants($id);
+
+        if ($result === true) {
+            echo "Rejected";
+        } else {
+            echo "Error deleting coach";
+        }
+
+        header("Location: manageapplicants");
+        exit;
     }
 
     public function addCoach()
@@ -157,9 +207,7 @@ class UserController
         $this->checkAuth('admin');
         
         require_once 'views/addCoach.php';
-    }
-
-    
+    }    
 
     public function viewAllCoach()
     {
@@ -167,6 +215,14 @@ class UserController
         $allcoaches = $this->model->getUserByRole("coach");
         
         require_once 'views/viewCoaches.php';
+    }
+
+    public function viewAllSwimmer()
+    {
+        $this->checkAuth('admin');
+        $allSwimmers = $this->model->getUserByRole("swimmer");
+        
+        require_once 'views/viewSwimmer.php';
     }
 
     public function showUpdateCoachForm($coachId)
@@ -203,7 +259,7 @@ class UserController
             $uniqueuser = $this->model->checkUser($_POST['username']);
 
             if(!$uniqueuser || $uniqueuser == $_POST['id']) {              
-               $result = $this->model->updateCoach($data); 
+               $result = $this->model->updateUser($data); 
             }  
             else {
                 echo "Already username existed";
@@ -850,8 +906,11 @@ class UserController
                 }
             }
             echo "Training Performance added successfully";
+            header("Location: viewsessions");
+            exit();
         }
         require_once 'views/addTrainingPerformance.php';
+        
     }
 
     public function getAllTrainingPerformances($sessionId)
@@ -861,6 +920,18 @@ class UserController
         
         require_once 'views/viewTrainingPerformances.php';
     }
+
+    public function getPerformanceBySwimmer()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+
+        $swimmer_id = $_SESSION["user_id"];
+        
+        $performances = $this->model->getPerformanceBySwimmer($swimmer_id);
+        
+        require_once 'views/trainingPerformance.php';
+    }
+
 
     public function showUpdateTrainingPerformanceForm($performanceId)
     {
@@ -905,7 +976,16 @@ class UserController
 
     }
 
+    public function getRaceResultBySwimmerID()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
 
+        $swimmer_id = $_SESSION["user_id"];
+        
+        $results = $this->model->getRaceResultBySwimmerID($swimmer_id);
+        
+        require_once 'views/raceResult.php';
+    }
 
     public function logout()
     {

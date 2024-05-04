@@ -2,7 +2,7 @@
 <?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mt-4">Add New Meet</h2>
-<form class="mt-4" method="post" action="<?php echo 'addmeet' ?>">
+<form class="mt-4" method="post" action="addmeet">
     <div class="mb-3">
         <div class="mb-3">
             <label for="meet_name" class="form-label">Meet Name:</label>

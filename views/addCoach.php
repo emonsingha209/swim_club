@@ -2,7 +2,7 @@
 <?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mt-4">Add New Coach</h2>
-<form class="mt-4" method="post" action="<?php echo 'register' ?>">
+<form class="mt-4" method="post" action="register">
     <div class="mb-3">
         <div class="mb-3">
             <label for="username" class="form-label">Username:</label>

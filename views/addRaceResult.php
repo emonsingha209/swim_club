@@ -2,7 +2,7 @@
 <?php include 'views/layoutHeader.php'; ?>
 
 <h2 class="mt-4">Add New Race Result</h2>
-<form class="mt-4" method="post" action="<?php echo 'addresultform' ?>">
+<form class="mt-4" method="post" action="addresultform">
     <input type="hidden" id="race_id" name="race_id" value="<?= $raceId ?>">
     <div class="mb-3">
         <label for="num_swimmers" class="form-label">Number of Swimmers:</label>

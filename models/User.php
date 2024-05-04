@@ -55,7 +55,8 @@ class User
                 } else {
                     $_SESSION['user_id'] = $user['id'];
                 }
-                $_SESSION['name'] = $user['first_name'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['name'] = $user['first_name'] . " " . $user['last_name'];
                 $_SESSION['role'] = $user['role'];
                 return $user['role'];
             }
@@ -210,6 +211,84 @@ class User
         return $errors;
     }
 
+    public function storeApplicant($data) {
+        // Store the applicant in the applicants table
+        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+        $sql = "INSERT INTO applicants (username, password, first_name, last_name, email, dob, phone, address, postcode, role, parent_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sssssssssss", $data['username'], $hashedPassword, $data['first_name'], $data['last_name'], $data['email'], $data['dob'], $data['phone'], $data['address'], $data['postcode'], $data['role'] , $data['swimmer_id']);
+
+        if ($stmt->execute()) {
+            return $this->conn->insert_id;
+        } else {
+            return false;
+        }
+    }
+
+    public function approveApplicant($applicant_id)
+    {
+        // Get applicant data from applicants table
+        $sql = "SELECT * FROM applicants WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $applicant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 1) {
+            $applicant = $result->fetch_assoc();
+
+            // Insert into users table
+            $sql = "INSERT INTO users (username, password, first_name, last_name, email, dob, phone, address, postcode, role)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ssssssssss", $applicant['username'], $applicant['password'], $applicant['first_name'], $applicant['last_name'], $applicant['email'], $applicant['dob'], $applicant['phone'], $applicant['address'], $applicant['postcode'], $applicant['role']);
+            $stmt->execute();
+
+            // Delete from applicants table
+            $sql = "UPDATE applicants SET approved = TRUE WHERE id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("i", $applicant_id);
+            return $stmt->execute();
+
+            return true;
+        } else {
+            return false; // Applicant not found
+        }
+    }
+
+    public function addParentForAppli($parentID, $id)
+    {
+        $errors = [];
+
+        if (empty($errors)) {
+            $sql = "UPDATE applicants SET parent_id = ? WHERE id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $swimmer = "swimmer";
+            $stmt->bind_param("ii", $parentID, $id);
+
+            if ($stmt->execute()) {
+                return true; // Success
+            } else {
+                $errors[] = "Error: " . $stmt->error;
+            }
+        }
+    }
+
+    public function rejectApplicants($id)
+    {
+        $sql = "DELETE FROM applicants WHERE id=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+
+        if ($stmt->execute()) {
+            return true; // Success
+        } else {
+            return false; // Error
+        }
+    }
+
+
     public function addParentSwimmer($parent_id, $swimmer_id) {
         // Prepare the SQL statement
         $sql = "INSERT INTO parent_swimmer (parent_id, swimmer_id) VALUES (?, ?)";
@@ -237,6 +316,44 @@ class User
         }
         $stmt->close();
         return $details;
+    }
+
+    public function getApplicantsByRole($role)
+    {
+        $query = "SELECT * FROM applicants WHERE role = ? AND  approved = 0";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $role);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
+
+    public function getUserCountByRole($role)
+    {
+        $query = "SELECT COUNT(*) as count FROM users WHERE role = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $role);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
+        return $count;
+    }
+
+    public function getSquadCount()
+    {
+        $query = "SELECT COUNT(*) as count FROM squad";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
+        return $count;
     }
 
     public function getSwimmerIdBySquad($data)
@@ -287,7 +404,7 @@ class User
     }
 
 
-    public function updateCoach($data)
+    public function updateUser($data)
     {
         $errors = [];
 
@@ -606,6 +723,25 @@ class User
         $stmt->close();
         return $details;
     }
+
+    public function getRaceResultBySwimmerID($swimmerId)
+    {
+        $query = "SELECT rr.*, r.* FROM raceresults rr
+                JOIN races r ON rr.RaceID = r.RaceID
+                WHERE rr.SwimmerID = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $swimmerId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
+
 
     public function updateRaceResult($data)
     {
@@ -975,6 +1111,24 @@ class User
         WHERE tp.SessionID = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $sessionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
+    }
+
+    public function getPerformanceBySwimmer($swimmer_id)
+    {
+        $query = "SELECT tp.*, ts.* 
+        FROM training_performance tp 
+        INNER JOIN training_session ts ON tp.SessionID = ts.SessionID 
+        WHERE tp.Swimmer_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $swimmer_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $details = array();
