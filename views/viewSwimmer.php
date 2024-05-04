@@ -3,8 +3,6 @@
 <section>
     <div class="d-flex justify-content-between mb-4">
         <h2>Swimmers Information</h2>
-        <a class="btn btn-primary btn-sm d-flex justify-content-center align-items-center" href="addCoach">Add New
-            Coach</a>
     </div>
 
     <div class="table-responsive">

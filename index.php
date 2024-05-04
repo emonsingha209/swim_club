@@ -36,15 +36,6 @@ switch ($route) {
     case 'swim_management/register':
         $userController->register();
         break;
-    case 'swim_management/update-personal-details':
-        $userController->updatePersonalDetails();
-        break;
-    case 'swim_management/add-swim-performance':
-        $userController->addSwimPerformance();
-        break;
-    case 'swim_management/view-swim-performances':
-        $userController->viewSwimmerPerformance();
-        break;
     case 'swim_management/addCoach':
         $userController->addCoach();
         break;
