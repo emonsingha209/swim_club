@@ -22,12 +22,6 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="logout">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="logout">Change Password</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link text-white" href="logout">Logout</a>
                     </li>
                 </ul>

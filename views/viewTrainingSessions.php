@@ -12,21 +12,23 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th scope="col">Session ID</th>
                 <th scope="col">Date</th>
                 <th scope="col">Distance</th>
                 <th scope="col">Stroke</th>
+                <?php if ($_SESSION['role'] == 'coach'): ?>
                 <th scope="col">Squad Name</th>
                 <th scope="col">Actions</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($allsessions as $session): ?>
+            <?php if ($_SESSION['role'] == 'admin' || $session['coach_id'] == $_SESSION['user_id'] || $session['squad_id'] == $_SESSION['squad_id']): ?>
             <tr>
-                <td><?php echo $session['SessionID']; ?></td>
                 <td><?php echo $session['Date']; ?></td>
                 <td><?php echo $session['Distance']; ?></td>
                 <td><?php echo $session['Stroke']; ?></td>
+                <?php if ($_SESSION['role'] == 'coach'): ?>
                 <td><?php echo $session['squad_name']; ?></td>
                 <td>
                     <a href="performanceform?sessionId=<?php echo $session['SessionID']; ?>&squadId=<?php echo $session['Squad_id']; ?>"
@@ -39,7 +41,9 @@
                     <a href="deletesession?sessionId=<?php echo $session['SessionID']; ?>"
                         class="btn btn-danger btn-sm">Delete</a>
                 </td>
+                <?php endif; ?>
             </tr>
+            <?php endif; ?>
             <?php endforeach; ?>
         </tbody>
     </table>

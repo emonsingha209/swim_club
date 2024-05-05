@@ -14,7 +14,9 @@
                     <th>Name</th>
                     <th>Date</th>
                     <th>Location</th>
+                    <?php if ($_SESSION['role'] == 'admin'): ?>
                     <th>Action</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -23,12 +25,14 @@
                     <td><?php echo $meet['MeetName']; ?></td>
                     <td class="text-nowrap"><?php echo $meet['MeetDate']; ?></td>
                     <td><?php echo $meet['Location']; ?></td>
+                    <?php if ($_SESSION['role'] == 'admin'): ?>
                     <td>
                         <a class="btn btn-primary btn-sm"
                             href="updatemeet?meetId=<?php echo $meet['MeetID']; ?>">Edit</a>
                         <a class="btn btn-danger btn-sm" href=" deletemeet?meetId=<?php echo $meet['MeetID']; ?>"
                             onclick="return confirm('Are you sure you want to delete this meet?')">Delete</a>
                     </td>
+                    <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

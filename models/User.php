@@ -33,6 +33,8 @@ class User
 
     public function login($username, $password)
     {
+        $username = $this->conn->real_escape_string($username);
+        $password = $this->conn->real_escape_string($password);
         $sql = "SELECT * FROM users WHERE username = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $username);
@@ -43,21 +45,11 @@ class User
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password'])) {
                 session_start();
-                if ($user['role'] == 'parent') {
-                    // Fetch swimmer_id from parent_swimmer table
-                    $swimmer_id = $this->getSwimmerId($user['id']);
-                    if ($swimmer_id !== false) {
-                        $_SESSION['user_id'] = $swimmer_id;
-                    } else {
-                        // Unable to fetch swimmer_id, return false
-                        return false;
-                    }
-                } else {
-                    $_SESSION['user_id'] = $user['id'];
-                }
+                $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['name'] = $user['first_name'] . " " . $user['last_name'];
                 $_SESSION['role'] = $user['role'];
+                $_SESSION['squad_id'] = $user['squad_id'];
                 return $user['role'];
             }
         }
@@ -81,7 +73,7 @@ class User
         return false;
     }
 
-    private function getSwimmerId($parent_id)
+    public function getSwimmerId($parent_id)
     {
         $sql = "SELECT swimmer_id FROM parent_swimmer WHERE parent_id = ?";
         $stmt = $this->conn->prepare($sql);
@@ -389,6 +381,21 @@ class User
         $stmt->close();
         
         return $user; 
+    }
+
+    public function getAllUserById($userId)
+    {
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $details = array();
+        while ($row = $result->fetch_assoc()) {
+            $details[] = $row;
+        }
+        $stmt->close();
+        return $details;
     }
 
     public function getUserIDByUsername($username)
@@ -915,7 +922,7 @@ class User
 
     public function getAllTrainingSessions()
     {
-        $query = "SELECT ts.*, s.squad_name 
+        $query = "SELECT ts.*, s.* 
         FROM training_session ts 
         JOIN squad s ON ts.Squad_id = s.squad_id";
         $result = $this->conn->query($query);
@@ -1045,7 +1052,8 @@ class User
         $stmt->close();
         
         return $performance;
-    }
+    }   
+
 
     public function updateTrainingPerformance($data)
     {
@@ -1146,18 +1154,51 @@ class User
     }
 
 
-    public function isAdultSwimmer($userId)
+    public function isUnderageSwimmer($userId)
     {
         $query = "SELECT dob FROM users WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $userId);
         $stmt->execute();
         $result = $stmt->get_result();
-        $dob = $result->fetch_assoc()['dob'];
+        
+        // Check if the query was successful
+        if ($result->num_rows === 0) {
+            // No user found with the given ID
+            return false;
+        }
+        
+        // Fetch the date of birth
+        $dobRow = $result->fetch_assoc();
+        $dob = $dobRow['dob'];
+    
+        // Close the statement
         $stmt->close();
         
-        // Assuming an adult is someone aged 18 or older
-        $eighteenYearsAgo = date('Y-m-d', strtotime('-18 years'));
-        return $dob <= $eighteenYearsAgo;
+        // Check if date of birth is fetched correctly
+        if (!$dob) {
+            // Date of birth is empty or invalid
+            return false;
+        }
+    
+        // Convert $dob to a DateTime object
+        $dobDateTime = DateTime::createFromFormat('Y-m-d', $dob);
+        
+        // Check if the conversion is successful
+        if (!$dobDateTime) {
+            // Invalid date format
+            return false;
+        }
+    
+        // Get today's date
+        $today = new DateTime();
+    
+        // Calculate the date 18 years ago
+        $eighteenYearsAgo = $today->modify('-18 years');
+    
+        // Compare dates
+        return $dobDateTime > $eighteenYearsAgo;
     }
+    
+
 }

@@ -40,7 +40,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Manage Applications</h5>
                     <p class="card-text">Approve membership applications of new swimmers.</p>
-                    <a href="#" class="btn btn-primary">Manage</a>
+                    <a href="manageapplicants" class="btn btn-primary">Manage</a>
                 </div>
             </div>
         </div>

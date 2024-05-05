@@ -29,9 +29,14 @@ class UserController
                 {
                     header("Location: swimmerdashboard");
                 }
+                else if($userRole === "parent")
+                {
+                    header("Location: parentdashboard");
+                }
                 exit;            
             } else {
                 $error = "Invalid username or password";
+                echo $userRole;
             }
         }
 
@@ -76,6 +81,15 @@ class UserController
         $username = $_SESSION['name'];     
 
         require_once 'views/swimmerDashboard.php';
+    }
+
+    public function parentDashboard()
+    {
+        $this->checkAuth('parent');
+
+        $username = $_SESSION['name'];     
+
+        require_once 'views/parentDashboard.php';
     }
 
     public function register() {
@@ -171,7 +185,7 @@ class UserController
             }
 
             if($parent_id) {
-                $relation = $this->model->addParentSwimmer($result, $result2);           
+                $relation = $this->model->addParentSwimmer($result2, $result);           
             }
 
             if ($result) {
@@ -208,6 +222,75 @@ class UserController
         exit;
     }
 
+    public function profile()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+
+        $userId = $_SESSION['user_id'];
+        
+        $user = $this->model->getUserById($userId);
+        
+        require_once 'views/userProfile.php';
+    }
+
+    public function compare()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+
+        $swimmer_id = null;
+
+        $swimmer_id2 = null;    
+        
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            if (isset($_POST['swimmer_id'])) {
+                $swimmer_id = $_POST['swimmer_id'];
+            } 
+            
+            if (isset($_POST['swimmer_id2'])) {
+                $swimmer_id2 = $_POST['swimmer_id2'];
+            } 
+        }
+
+        $trainingPerformance = $this->model->getPerformanceBySwimmer($swimmer_id);;
+
+        $raceResult = $this->model->getRaceResultBySwimmerID($swimmer_id);        
+
+        $trainingPerformance2 = $this->model->getPerformanceBySwimmer($swimmer_id2);;
+
+        $raceResult2 = $this->model->getRaceResultBySwimmerID($swimmer_id2);
+
+        $users = $this->model->getUserByRole("swimmer");
+        
+        require_once 'views/compare.php';
+    }
+
+    public function profileUpdate()
+    {
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
+
+        $userId = $_SESSION['user_id'];
+
+        $user2 = null;
+
+        if($_SESSION['role'] == "swimmer") {
+            $isAdult = $this->model->isUnderageSwimmer($userId);
+            if( $isAdult)
+            {
+                echo "You are under age. Not permit to update.";
+                return;
+            }
+        }  
+        
+        if($_SESSION['role'] == "parent") {
+            $swimmer_id = $this->model->getSwimmerId($_SESSION["user_id"]);
+            $user2 = $this->model->getUserById($swimmer_id);
+        }    
+        
+        $user = $this->model->getUserById($userId);
+        
+        require_once 'views/updateProfile.php';
+    }
+
     public function addCoach()
     {
         $this->checkAuth('admin');
@@ -231,19 +314,19 @@ class UserController
         require_once 'views/viewSwimmer.php';
     }
 
-    public function showUpdateCoachForm($coachId)
+    public function showUpdateUserForm($id)
     {
         $this->checkAuth('admin');
         // Get coach details
-        $coach = $this->model->getUserById($coachId);
+        $user = $this->model->getUserById($id);
 
         // Display update form
-        require_once 'views/updateCoachForm.php';
+        require_once 'views/updateUserForm.php';
     }
 
-    public function updateCoachAction()
+    public function updateUserAction()
     {
-        $this->checkAuth('admin');
+        $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $data = [
                 'id' => $_POST['id'],
@@ -272,9 +355,11 @@ class UserController
             }                         
 
             if ($result === true) {
-                echo "Coach updated successfully";
+                echo "User updated successfully";
             } else {
-                echo "Error updating coach: ";
+                echo "Error updating user: ";
+                echo $_POST['id'];
+                echo $uniqueuser;
             }
         }
     }
@@ -650,7 +735,6 @@ class UserController
 
         foreach ($allsquads as &$squad) {
             if ($squad['coach_id'] !== null && $squad['coach_id'] != 0) {
-                // Assuming $squad['coach_id'] holds the coach's ID
                 $coach = $this->model->getUserById($squad['coach_id']);
             
                 // Set the coach_name for the squad
@@ -819,7 +903,7 @@ class UserController
     public function getAllTrainingSessions()
     {
         $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
-        $allsessions = $this->model->getAllTrainingSessions();
+        $allsessions = $this->model->getAllTrainingSessions();        
 
         require_once 'views/viewTrainingSessions.php';
     }
@@ -926,7 +1010,14 @@ class UserController
     {
         $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
 
-        $swimmer_id = $_SESSION["user_id"];
+        if($_SESSION["role"] == "parent")
+        {           
+            $swimmer_id = $this->model->getSwimmerId($_SESSION["user_id"]);
+        }
+        else 
+        {
+            $swimmer_id = $_SESSION["user_id"];
+        }
         
         $performances = $this->model->getPerformanceBySwimmer($swimmer_id);
         
@@ -981,7 +1072,14 @@ class UserController
     {
         $this->checkAuth('admin', 'coach', 'parent', 'swimmer');
 
-        $swimmer_id = $_SESSION["user_id"];
+        if($_SESSION["role"] == "parent")
+        {           
+            $swimmer_id = $this->model->getSwimmerId($_SESSION["user_id"]);
+        }
+        else 
+        {
+            $swimmer_id = $_SESSION["user_id"];
+        }
         
         $results = $this->model->getRaceResultBySwimmerID($swimmer_id);
         

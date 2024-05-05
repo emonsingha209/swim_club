@@ -36,6 +36,15 @@ switch ($route) {
     case 'swim_management/register':
         $userController->register();
         break;
+    case 'swim_management/profile':
+        $userController->profile();
+        break; 
+    case 'swim_management/compare':
+        $userController->compare();
+        break;  
+    case 'swim_management/profileupdate':
+        $userController->profileUpdate();
+        break;  
     case 'swim_management/addCoach':
         $userController->addCoach();
         break;
@@ -61,6 +70,9 @@ switch ($route) {
     case 'swim_management/swimmerdashboard':
         $userController->swimmerDashboard();
         break;
+    case 'swim_management/parentdashboard':
+        $userController->parentDashboard();
+        break;
     case 'swim_management/viewallcoach':
         $userController->viewAllCoach();
         break;  
@@ -72,10 +84,10 @@ switch ($route) {
         $parts = parse_url($route);
         parse_str($parts['query'], $query);
         $id = isset($query['id']) ? $query['id'] : null;
-        $userController->showUpdateCoachForm($id);
+        $userController->showUpdateUserForm($id);
         break;    
-    case 'swim_management/coachformupdate':
-        $userController->updateCoachAction();
+    case 'swim_management/userformupdate':
+        $userController->updateUserAction();
         break;
     case strpos($route, 'swim_management/deleteuser') === 0:
         // Extract the coach ID from the URL

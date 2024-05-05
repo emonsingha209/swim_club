@@ -24,24 +24,45 @@
                             class="fa-solid fa-person-running me-2 text-primary"></i>Races</a></li>
                 <li class="list-group-item"><a class="nav-link" href="viewsquads"><i
                             class="fa-solid fa-people-line me-2 text-primary"></i>Squads</a></li>
+                <li class="list-group-item"><a class="nav-link" href="compare"><i
+                            class="fa-solid fa-v me-2 text-primary"></i>Comparison</a></li>
 
             </ul>
             <?php elseif ($_SESSION['role'] == 'coach'): ?>
-            <h3><a class="nav-link mb-3" href="coachDashboard">Coach Dashboard</a></h3>
-            <ul class="list-group">
-                <li class="list-group-item"><a class="nav-link" href="viewraces">Races</a></li>
-                <li class="list-group-item"><a class="nav-link" href="viewsquads">Squads</a></li>
-                <li class="list-group-item"><a class="nav-link" href="viewsessions">Training Session</a></li>
-            </ul>
-            <?php elseif ($_SESSION['role'] == 'swimmer'): ?>
-            <a class="card py-2 px-3 nav-link mb-3" href="swimmerdashboard">
+            <a class="card py-2 px-3 nav-link mb-3" href="profile">
                 <i class="fas fa-user position-absolute top-50 start-0 translate-middle-y ms-3 text-primary"></i>
                 <span class="ps-4"><?php echo $_SESSION['name']; ?></span></a>
             <ul class="list-group">
+                <li class="list-group-item"><a class="nav-link" href="coachDashboard"><i
+                            class="fa-solid fa-gauge me-2 text-primary"></i>Dashboard</a>
+                </li>
+                <li class="list-group-item"><a class="nav-link" href="viewsquads"><i
+                            class="fa-solid fa-people-line me-2 text-primary"></i>Squads</a></li>
+                <li class="list-group-item"><a class="nav-link" href="viewsessions"><i
+                            class="fa-solid fa-calendar-days me-2 text-primary"></i>Training Session</a></li>
+                <li class="list-group-item"><a class="nav-link" href="viewraces"><i
+                            class="fa-solid fa-person-running me-2 text-primary"></i>Races</a></li>
+                <li class="list-group-item"><a class="nav-link" href="viewmeets"><i
+                            class="fa-brands fa-meetup me-2 text-primary"></i>Meets</a></li>
+                <li class="list-group-item"><a class="nav-link" href="compare"><i
+                            class="fa-solid fa-v me-2 text-primary"></i>Comparison</a></li>
+            </ul>
+            <?php elseif ($_SESSION['role'] == 'swimmer' || $_SESSION['role'] == 'parent'): ?>
+            <a class="card py-2 px-3 nav-link mb-3" href="profile">
+                <i class="fas fa-user position-absolute top-50 start-0 translate-middle-y ms-3 text-primary"></i>
+                <span class="ps-4"><?php echo $_SESSION['name']; ?></span></a>
+            <ul class="list-group">
+                <?php if ($_SESSION['role'] == 'swimmer'): ?>
                 <li class="list-group-item"><a class="nav-link" href="swimmerdashboard"><i
                             class="fa-solid fa-gauge me-2 text-primary"></i>Dashboard</a>
                 </li>
-                <li class="list-group-item"><a class="nav-link" href="performancedata"><i
+                <?php endif; ?>
+                <?php if ($_SESSION['role'] == 'parent'): ?>
+                <li class="list-group-item"><a class="nav-link" href="parentdashboard"><i
+                            class="fa-solid fa-gauge me-2 text-primary"></i>Dashboard</a>
+                </li>
+                <?php endif; ?>
+                <li class="list-group-item"><a class="nav-link" href="viewsessions"><i
                             class="fa-solid fa-calendar-days me-2 text-primary"></i>Training Schedule</a>
                 </li>
                 <li class="list-group-item"><a class="nav-link" href="performancedata"><i
@@ -51,6 +72,8 @@
                             class="fa-solid fa-person-running me-2 text-primary"></i>Races</a></li>
                 <li class="list-group-item"><a class="nav-link" href="dataraceresult"><i
                             class="fa-solid fa-square-poll-vertical me-2 text-primary"></i>Race Results</a></li>
+                <li class="list-group-item"><a class="nav-link" href="compare"><i
+                            class="fa-solid fa-v me-2 text-primary"></i>Comparison</a></li>
             </ul>
             <?php endif; ?>
         </div>

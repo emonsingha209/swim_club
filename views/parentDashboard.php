@@ -12,7 +12,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Training Sessions</h5>
-                    <p class="card-text">View your training sessions</p>
+                    <p class="card-text">View your child training sessions</p>
                     <a href="viewsessions" class="btn btn-primary">View</a>
                 </div>
             </div>
@@ -21,7 +21,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Training Performance</h5>
-                    <p class="card-text">View your training performance</p>
+                    <p class="card-text">View your Child training performance</p>
                     <a href="performancedata" class="btn btn-primary">View</a>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Race Result</h5>
-                    <p class="card-text">View your race result</p>
+                    <p class="card-text">View your child race result</p>
                     <a href="dataraceresult" class="btn btn-primary">View</a>
                 </div>
             </div>

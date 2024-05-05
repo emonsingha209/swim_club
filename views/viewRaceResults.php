@@ -25,17 +25,17 @@
                     <td><?php echo $raceResult['TimeTaken']; ?></td>
                     <td>
                         <?php
-                    $place = $raceResult['PlaceAchieved'];
-                    if ($place == 1) {
-                        echo $place . 'st';
-                    } elseif ($place == 2) {
-                        echo $place . 'nd';
-                    } elseif ($place == 3) {
-                        echo $place . 'rd';
-                    } else {
-                        echo $place . 'th';
-                    }
-                    ?>
+                            $place = $raceResult['PlaceAchieved'];
+                            if ($place == 1) {
+                                echo $place . 'st';
+                            } elseif ($place == 2) {
+                                echo $place . 'nd';
+                            } elseif ($place == 3) {
+                                echo $place . 'rd';
+                            } else {
+                                echo $place . 'th';
+                            }
+                        ?>
                     </td>
                     <?php if ($_SESSION['role'] == 'admin'): ?>
                     <td>
@@ -44,7 +44,7 @@
                         <a class="btn btn-danger btn-sm"
                             href="deleterresult?raceresultId=<?php echo $raceResult['ResultID']; ?>"
                             onclick="return confirm('Are you sure you want to delete this race?')">Delete</a>
-                    </td>n</th>
+                    </td>
                     <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
